@@ -101,8 +101,10 @@
       household: household,
       mode: mode,
       percentile: percentile,
+      percentileKey: options.percentileKey || 'median',
       year: year,
       salary: salary,
+      customSalary: Number(options.customSalary) > 0 ? Number(options.customSalary) : null,
       takeHome: takeHome,
       essentials: essentials,
       monthlyBudget: monthlyBudget,
@@ -207,8 +209,9 @@
         stateCode: state.code,
         year: result.year,
         householdId: result.household.id,
-        percentileKey: Object.keys(DATA.percentiles).filter(function (key) { return DATA.percentiles[key] === result.percentile; })[0],
-        modeId: result.mode.id
+        percentileKey: result.percentileKey,
+        modeId: result.mode.id,
+        customSalary: result.customSalary || ''
       });
       item.rankValue = measure === 'ratio' ? item.ratio : measure === 'leftover' ? item.leftover : measure === 'salary' ? item.salary : item.state.rpp;
       return item;
@@ -259,8 +262,8 @@
 
   function renderTrend(result, target) {
     var series = [
-      { values: DATA.years.map(function (year) { return calculate({ careerId: result.career.id, stateCode: result.state.code, year: year, householdId: result.household.id, percentileKey: 'median', modeId: result.mode.id }).takeHome; }) },
-      { values: DATA.years.map(function (year) { return calculate({ careerId: result.career.id, stateCode: result.state.code, year: year, householdId: result.household.id, percentileKey: 'median', modeId: result.mode.id }).monthlyBudget; }) }
+      { values: DATA.years.map(function (year) { return calculate({ careerId: result.career.id, stateCode: result.state.code, year: year, householdId: result.household.id, percentileKey: result.percentileKey, modeId: result.mode.id, customSalary: result.customSalary || '' }).takeHome; }) },
+      { values: DATA.years.map(function (year) { return calculate({ careerId: result.career.id, stateCode: result.state.code, year: year, householdId: result.household.id, percentileKey: result.percentileKey, modeId: result.mode.id, customSalary: result.customSalary || '' }).monthlyBudget; }) }
     ];
     target.innerHTML = lineSvg(series, ['#c9f56a', '#ff9c63'], ['Take-home', 'Budget']);
   }
@@ -268,7 +271,7 @@
   function renderTable(result, comparison) {
     var scenarios = [result, comparison];
     var ranked = DATA.states.map(function (state) {
-      return calculate({ careerId: result.career.id, stateCode: state.code, year: result.year, householdId: result.household.id, percentileKey: 'median', modeId: result.mode.id });
+      return calculate({ careerId: result.career.id, stateCode: state.code, year: result.year, householdId: result.household.id, percentileKey: result.percentileKey, modeId: result.mode.id, customSalary: result.customSalary || '' });
     }).sort(function (a, b) { return b.ratio - a.ratio; });
     ranked.slice(0, 3).forEach(function (item) {
       if (!scenarios.some(function (existing) { return existing.state.code === item.state.code; })) scenarios.push(item);
@@ -294,7 +297,7 @@
     setText('#active-model-label', result.mode.name);
     setText('#active-model-note', result.mode.description);
     setText('#result-title', result.state.name + ' · ' + result.career.name);
-    setText('#result-subtitle', result.household.name + ' · ' + result.percentile.label + ' · ' + result.year);
+    setText('#result-subtitle', result.household.name + ' · ' + (result.customSalary ? 'Custom salary' : result.percentile.label) + ' · ' + result.year);
     setText('#result-badge', result.leftover >= 0 ? 'SURPLUS' : 'SHORTFALL');
     setText('#leftover-value', signedMoney(result.leftover));
     setText('#leftover-note', result.leftover >= 0 ? 'after the selected model' : 'monthly gap in the selected model');
