@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Build your budget · Paycheck Atlas</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="dashboard">
+  <div class="prototype-banner"><span class="pulse-dot"></span> Visual prototype · illustrative scenario data while the source-backed data pipeline is being connected</div>
+  <nav class="site-nav shell"><a class="brand" href="index.html"><span class="brand-mark">$</span><span>PAYCHECK<span class="brand-accent">ATLAS</span></span></a><div class="nav-links"><a href="index.html">Report</a><a class="active" href="dashboard.html">Build your budget <span class="arrow">↗</span></a></div></nav>
+
+  <main class="dashboard-shell shell">
+    <header class="dashboard-head"><div><p class="eyebrow">The comparison lab</p><h1>Build a life.<br><span class="gradient-text">Stress-test the paycheck.</span></h1><p>Change one assumption and watch the budget re-balance in real time.</p></div><div class="dashboard-mode"><span class="tiny-label">ACTIVE MODEL</span><strong id="active-model-label">Balanced life</strong><span id="active-model-note">Core needs plus modest personal spending and emergency savings.</span></div></header>
+
+    <section class="control-stage">
+      <div class="control-header"><div><span class="card-kicker">SCENARIO BUILDER</span><h2>Your assumptions</h2></div><button class="button button-ghost" id="reset-dashboard">Reset all <span>↺</span></button></div>
+      <div class="control-grid">
+        <label class="control-field"><span>Career</span><select id="career-select"></select></label>
+        <label class="control-field"><span>Primary location</span><select id="state-select"></select></label>
+        <label class="control-field"><span>Compare with</span><select id="compare-state-select"></select></label>
+        <label class="control-field"><span>Year</span><select id="year-select"></select></label>
+        <label class="control-field"><span>Household</span><select id="household-select"></select></label>
+        <label class="control-field"><span>Salary lens</span><select id="percentile-select"></select></label>
+        <label class="control-field control-wide"><span>Budget model</span><select id="mode-select"></select></label>
+        <label class="control-field custom-salary-field"><span>Custom salary <em>optional</em></span><div class="input-prefix"><span>$</span><input id="custom-salary" type="number" min="20000" max="300000" step="1000" placeholder="Use career salary"></div></label>
+      </div>
+      <div class="control-foot"><span><i class="live-dot"></i> All values recalculate in-browser</span><button class="assumption-button" id="assumptions-open">How is this calculated? <span>ⓘ</span></button></div>
+    </section>
+
+    <section class="dashboard-kpis" id="dashboard-kpis"></section>
+
+    <section class="dashboard-grid top-grid">
+      <article class="dash-panel hero-result-panel"><div class="panel-top"><div><span class="card-kicker">YOUR MONTHLY PICTURE</span><h2 id="result-title">Texas · Registered Nurse</h2><p id="result-subtitle">Solo renter · Median salary · 2024</p></div><div class="result-badge" id="result-badge">SURPLUS</div></div><div class="hero-result-body"><div class="gauge-wrap"><div class="gauge" id="affordability-gauge"><div class="gauge-center"><span>ratio</span><strong id="gauge-value">1.00×</strong></div></div><div class="gauge-caption" id="gauge-caption">Your take-home pay covers the modeled budget.</div></div><div class="result-figures"><div class="result-figure"><span>Monthly leftover</span><strong id="leftover-value">$0</strong><small id="leftover-note">after the selected model</small></div><div class="result-figure"><span>Break-even salary</span><strong id="break-even-value">$0</strong><small>gross annual income needed</small></div><div class="result-figure"><span>Housing share</span><strong id="housing-share-value">0%</strong><small>of essential expenses</small></div></div></div></article>
+      <article class="dash-panel comparison-panel"><div class="panel-top"><div><span class="card-kicker">LOCATION SWAP</span><h2 id="comparison-title">Same career. New coordinates.</h2></div><span class="card-icon">⇄</span></div><div class="compare-cards" id="compare-cards"></div><div class="compare-delta" id="compare-delta"></div></article>
+    </section>
+
+    <section class="dashboard-grid chart-grid">
+      <article class="dash-panel wide-panel"><div class="panel-top"><div><span class="card-kicker">WHERE THE MONEY GOES</span><h2>Paycheck flow</h2><p>See the expense categories that create the result.</p></div><div class="switch-group" role="group" aria-label="Chart measure"><button class="switch-button active" data-chart-measure="expenses">Expense share</button><button class="switch-button" data-chart-measure="dollars">Monthly dollars</button></div></div><div class="waterfall" id="waterfall-chart"></div></article>
+      <article class="dash-panel"><div class="panel-top"><div><span class="card-kicker">COST DRIVERS</span><h2>What moves the needle?</h2></div><span class="card-icon">↗</span></div><div id="driver-list" class="driver-list"></div><div class="driver-callout" id="driver-callout"></div></article>
+    </section>
+
+    <section class="dashboard-grid chart-grid lower-grid">
+      <article class="dash-panel wide-panel"><div class="panel-top"><div><span class="card-kicker">RANKED VIEW</span><h2>America, sorted differently</h2><p>Toggle the question behind the ranking.</p></div><label class="inline-select"><span>Rank by</span><select id="rank-measure"><option value="ratio">Affordability ratio</option><option value="leftover">Monthly leftover</option><option value="salary">Median salary</option><option value="price">Price level</option></select></label></div><div class="ranked-list" id="ranked-list"></div></article>
+      <article class="dash-panel"><div class="panel-top"><div><span class="card-kicker">OVER TIME</span><h2>Same scenario, seven years</h2></div><span class="card-icon">⌁</span></div><div class="mini-trend" id="dashboard-trend"></div><div class="trend-foot"><span id="trend-start">2018</span><span>→</span><span id="trend-end">2024</span></div></article>
+    </section>
+
+    <section class="dash-panel table-panel"><div class="panel-top"><div><span class="card-kicker">THE NUMBERS BEHIND THE VIEW</span><h2>Scenario ledger</h2><p>Every row in the current comparison uses the same assumptions.</p></div><div class="table-actions"><button class="button button-ghost" id="download-scenario">Download view <span>↓</span></button></div></div><div class="table-scroll"><table id="scenario-table"><thead><tr><th>Location</th><th>Salary</th><th>Take-home / mo</th><th>Essentials / mo</th><th>Leftover / mo</th><th>Ratio</th><th>Housing share</th></tr></thead><tbody></tbody></table></div></section>
+
+    <section class="dashboard-note"><div class="note-icon">✦</div><div><h3>Make the number yours.</h3><p>Try a different salary percentile, switch from Essentials to Comfortable, or change the household. The dashboard is designed to show which assumption—not just which state—changed the answer.</p></div></section>
+  </main>
+
+  <dialog id="assumptions-dialog"><div class="dialog-inner"><button class="dialog-close" id="assumptions-close">×</button><p class="eyebrow">Calculation notes</p><h2>What this prototype is doing</h2><p>The final model will combine annual occupation wages, regional price levels, housing costs, and documented household assumptions. This prototype uses illustrative values so the interactions can be tested before the source-backed pipeline is connected.</p><div class="formula-card"><span>Affordability ratio</span><strong>Take-home income ÷ modeled monthly budget</strong></div><div class="formula-card"><span>Monthly leftover</span><strong>Take-home income − modeled monthly budget</strong></div><p class="dialog-small">The model is a transparent scenario estimate, not financial advice. The final report will list every source, transformation, dropped row, and assumption.</p></div></dialog>
+  <script src="data/prototype-data.js"></script><script src="app.js"></script>
+</body>
+</html>

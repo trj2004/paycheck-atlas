@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Where Does Your Paycheck Go?</title>
+  <meta name="description" content="A visual report about how location changes the purchasing power of a full-time salary.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="home">
+  <div class="prototype-banner"><span class="pulse-dot"></span> Visual prototype · illustrative scenario data while the source-backed data pipeline is being connected</div>
+  <nav class="site-nav shell">
+    <a class="brand" href="index.html"><span class="brand-mark">$</span><span>PAYCHECK<span class="brand-accent">ATLAS</span></span></a>
+    <div class="nav-links"><a class="active" href="index.html">Report</a><a href="dashboard.html">Build your budget <span class="arrow">↗</span></a></div>
+  </nav>
+
+  <main>
+    <section class="hero shell">
+      <div class="hero-copy">
+        <p class="eyebrow">A location-based affordability report</p>
+        <h1>Where does your<br><span class="gradient-text">paycheck go?</span></h1>
+        <p class="hero-lede">A full-time salary is not a lifestyle. It is a starting point. Explore how the same career can create breathing room in one state and a budget gap in another.</p>
+        <div class="hero-actions"><a class="button button-primary" href="dashboard.html">Build a lifestyle <span>→</span></a><a class="text-link" href="#findings">Read the findings <span>↓</span></a></div>
+      </div>
+      <div class="hero-visual">
+        <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+        <div class="salary-card">
+          <div class="salary-card-top"><span class="tiny-label">LIVE SCENARIO</span><span class="status-pill">MEDIAN</span></div>
+          <div class="salary-role"><span class="role-icon">✚</span><div><strong>Registered Nurse</strong><small>Texas · Solo renter</small></div></div>
+          <div class="salary-amount">$5,672<span>/mo</span></div>
+          <div class="mini-flow"><div class="mini-flow-row"><span>Take-home pay</span><b>$5,672</b></div><div class="mini-flow-row muted"><span>Modeled plan</span><b>−$3,394</b></div><div class="flow-line"><i style="width: 67%"></i></div><div class="mini-flow-row leftover"><span>Breathing room</span><b>$2,278</b></div></div>
+          <div class="score-row"><span>Affordability ratio</span><strong>1.67×</strong></div>
+        </div>
+        <div class="floating-chip chip-left"><span>⌂</span><div><small>Housing share</small><b>29%</b></div></div>
+        <div class="floating-chip chip-right"><span>↗</span><div><small>Plan surplus</small><b>TX · +$2.3k</b></div></div>
+      </div>
+    </section>
+
+    <section class="signal-strip"><div class="shell signal-grid"><div><span class="signal-kicker">THE QUESTION</span><p>How does location affect the purchasing power of a full-time salary?</p></div><div class="signal-note"><span class="signal-line"></span><span>Income is only half of the story.<br><em>The rest is where you live.</em></span></div></div></section>
+
+    <section class="section shell" id="findings">
+      <div class="section-heading"><div><p class="eyebrow">01 · The affordability lens</p><h2>Same paycheck.<br><span class="soft-text">Different life.</span></h2></div><p class="section-intro">This report looks past the salary headline and measures what remains after a transparent basic-needs budget.</p></div>
+      <div class="metric-grid" id="home-metrics"></div>
+      <div class="feature-grid">
+        <article class="feature-card feature-map"><div class="feature-head"><div><span class="card-kicker">PURCHASING POWER</span><h3>The map is not a salary ranking.</h3></div><span class="card-icon">⌖</span></div><p>High wages do not automatically create the most room. The affordability ratio combines income with the local price profile, so the ranking asks a sharper question: where does the money actually stretch?</p><div class="state-bars" id="home-ranking"></div><a class="card-link" href="dashboard.html">Open the comparison lab <span>→</span></a></article>
+        <article class="feature-card feature-flow"><div class="feature-head"><div><span class="card-kicker">THE PAYCHECK FLOW</span><h3>Every dollar has a destination.</h3></div><span class="card-icon">≋</span></div><div class="flow-legend"><span><i class="dot housing"></i>Housing</span><span><i class="dot food"></i>Food</span><span><i class="dot transport"></i>Transport</span><span><i class="dot other"></i>Everything else</span></div><div class="stacked-flow" id="home-flow"></div><p class="feature-footnote">The dashboard lets you change the household and budget model to see which cost category moves the result.</p></article>
+      </div>
+    </section>
+
+    <section class="section section-dark shell-wide">
+      <div class="shell"><div class="section-heading compact"><div><p class="eyebrow">02 · The spread</p><h2>Where the middle<br><span class="gradient-text">gets squeezed.</span></h2></div><p class="section-intro">The gap is not only between the cheapest and most expensive states. It is between what people earn and what a basic life asks them to spend.</p></div><div class="insight-grid"><div class="insight-copy"><span class="big-number">3.2×</span><p class="big-label">possible difference in monthly breathing room for the same career, household, and salary level.</p><div class="quote-card"><span class="quote-mark">“</span><p>Affordability is not a personality trait of a state. It is the interaction between a paycheck and a place.</p></div></div><div class="trend-panel"><div class="panel-top"><div><span class="card-kicker">ILLUSTRATIVE TREND</span><h3>Median salary vs. essential budget</h3></div><div class="legend"><span><i class="legend-line salary-line"></i>Salary</span><span><i class="legend-line cost-line"></i>Budget</span></div></div><div class="trend-chart" id="home-trend"></div><div class="axis-labels"><span>2018</span><span>2024</span></div></div></div></div>
+    </section>
+
+    <section class="section shell" id="method">
+      <div class="section-heading"><div><p class="eyebrow">03 · The model</p><h2>Open the hood.<br><span class="soft-text">Trust the math.</span></h2></div><p class="section-intro">The final version will show the assumptions behind every number instead of hiding the model behind a polished interface.</p></div>
+      <div class="model-grid"><div class="model-card"><span class="model-number">01</span><h3>Take-home pay</h3><p>Career wage, salary percentile, location, year, and a documented tax assumption.</p></div><div class="model-card"><span class="model-number">02</span><h3>Basic needs</h3><p>Housing, food, transportation, health care, childcare, utilities, and other necessities.</p></div><div class="model-card"><span class="model-number">03</span><h3>Two ways to see it</h3><p>Monthly leftover shows the dollars. The affordability ratio shows the scale of the gap.</p></div><div class="model-card"><span class="model-number">04</span><h3>Scenario, not prophecy</h3><p>Change the household or lifestyle assumptions and the dashboard explains what moved.</p></div></div>
+      <div class="closing-cta"><div><p class="eyebrow">Ready to make it personal?</p><h3>Put a career, a place, and a life in the same frame.</h3></div><a class="button button-primary" href="dashboard.html">Enter the dashboard <span>↗</span></a></div>
+    </section>
+  </main>
+  <footer class="site-footer shell"><span>PAYCHECK ATLAS · prototype checkpoint</span><span>Built around one question: where does your paycheck go?</span></footer>
+  <script src="data/prototype-data.js"></script><script src="app.js"></script>
+</body>
+</html>
