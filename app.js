@@ -195,16 +195,15 @@
       return clamp(score, 0, 1);
     };
     var mapHost = $('#atlas-map');
-    var mapObject = mapHost.querySelector('object');
-    if (!mapObject) {
-      mapHost.innerHTML = '<object id=\"state-map-object\" class=\"state-map-object\" type=\"image/svg+xml\" data=\"assets/us_map.svg\" aria-label=\"United States state affordability map\"></object>';
-      mapObject = mapHost.querySelector('object');
-      mapObject.addEventListener('load', function () { renderMap(result); });
+    var mapSvg = mapHost.querySelector('svg');
+    if (!mapSvg) {
+      mapHost.innerHTML = window.PAYCHECK_ATLAS_MAP || '<div class="map-loading">Map asset unavailable</div>';
+      mapSvg = mapHost.querySelector('svg');
     }
-    var mapDocument = mapObject.contentDocument;
-    if (mapDocument) {
+    if (mapSvg) {
+      mapSvg.classList.add('state-map-inline');
       scenarios.forEach(function (item) {
-        var group = mapDocument.getElementById(item.state.code);
+        var group = document.getElementById(item.state.code);
         if (!group) return;
         var score = scoreFor(item);
         var color = 'hsl(' + Math.round(36 + score * 44) + ', ' + Math.round(76 + score * 10) + '%, ' + Math.round(55 + score * 10) + '%)';
@@ -229,7 +228,7 @@
         };
         var title = group.querySelector('title');
         if (!title) {
-          title = mapDocument.createElementNS('http://www.w3.org/2000/svg', 'title');
+          title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
           group.insertBefore(title, group.firstChild);
         }
         title.textContent = item.state.name + ' · ' + mapValueLabel(item, measure);
