@@ -28,6 +28,16 @@
       <div class="control-foot"><span><i class="live-dot"></i> All values recalculate in-browser</span><button class="assumption-button" id="assumptions-open">How is this calculated? <span>ⓘ</span></button></div>
     </section>
 
+    <section class="map-stage">
+      <article class="dash-panel map-panel">
+        <div class="panel-top map-panel-top"><div><span class="card-kicker">THE LOCATION LENS</span><h2>Where does the paycheck stretch?</h2><p>Click a state to inspect it, then make it the comparison for the scenario.</p></div><label class="inline-select"><span>Map by</span><select id="map-measure"><option value="ratio">Affordability ratio</option><option value="leftover">Monthly leftover</option><option value="required">Salary required</option><option value="price">Price level</option></select></label></div>
+        <div class="map-toolbar"><span><i class="map-legend-dot low"></i> tighter budget</span><span><i class="map-legend-dot high"></i> more breathing room</span><span class="map-hint">Selected state has a lime outline · comparison has an orange outline</span></div>
+        <div class="atlas-map" id="atlas-map" aria-label="Interactive prototype map of the United States"></div>
+        <div class="map-scrubber"><span class="scrubber-label">Time travel</span><input id="map-year-scrubber" type="range" min="2018" max="2024" step="1" value="2024"><output id="map-year-label">2024</output><span class="scrubber-note">Same scenario, different year</span></div>
+      </article>
+      <aside class="dash-panel map-story-panel"><div class="panel-top"><div><span class="card-kicker">STATE STORY</span><h2 id="map-selected-state">Texas</h2></div><span class="card-icon">⌖</span></div><p class="map-story-copy" id="map-selected-copy">Click a state to see what changes.</p><div class="map-story-details" id="map-selected-detail"></div><button class="button button-ghost map-compare-button" id="map-compare-button">Use as comparison <span>⇄</span></button></aside>
+    </section>
+
     <section class="dashboard-kpis" id="dashboard-kpis"></section>
 
     <section class="dashboard-grid top-grid">

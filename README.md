@@ -17,6 +17,7 @@ The final dataset will use annual occupation wages, regional price levels, housi
 - `styles.css` — shared dark financial/home design system.
 - `app.js` — calculations, controls, rankings, and visual rendering.
 - `data/prototype-data.js` — temporary illustrative inputs for the design checkpoint.
+- The prototype dashboard includes a 50-state click map, map measure toggles, a time scrubber, and a selected-state story card.
 - `data/README.md` — final panel grain, source map, and reproducibility notes.
 - `scripts/build_dataset.py` — source-backed BLS/BEA/ACS panel builder and rubric validator.
 

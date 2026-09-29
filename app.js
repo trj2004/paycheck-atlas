@@ -4,7 +4,18 @@
   var DATA = window.PAYCHECK_ATLAS;
   var page = document.body.getAttribute('data-page');
   var currentChartMeasure = 'expenses';
+  var currentMapMeasure = 'ratio';
+  var mapFocusedStateCode = null;
   var latestRows = [];
+
+  var MAP_LAYOUT = {
+    WA: [1, 1], ID: [2, 1], MT: [3, 1], ND: [4, 1], MN: [5, 1], WI: [6, 1], MI: [7, 1], NY: [8, 1], VT: [9, 1], NH: [10, 1], ME: [11, 1],
+    OR: [1, 2], NV: [2, 2], WY: [3, 2], SD: [4, 2], IA: [5, 2], IL: [6, 2], IN: [7, 2], OH: [8, 2], PA: [9, 2], MA: [10, 2], CT: [11, 2],
+    CA: [1, 3], UT: [2, 3], CO: [3, 3], NE: [4, 3], MO: [5, 3], KY: [6, 3], WV: [7, 3], VA: [8, 3], NJ: [9, 3], RI: [10, 3],
+    AZ: [1, 4], NM: [2, 4], KS: [3, 4], AR: [4, 4], TN: [5, 4], NC: [6, 4], MD: [7, 4], DE: [8, 4],
+    TX: [3, 5], OK: [4, 5], LA: [5, 5], MS: [6, 5], AL: [7, 5], GA: [8, 5], SC: [9, 5], FL: [10, 5],
+    AK: [1, 6], HI: [2, 6]
+  };
 
   function $(selector, root) {
     return (root || document).querySelector(selector);
@@ -141,6 +152,76 @@
   function setText(selector, value) {
     var element = $(selector);
     if (element) element.textContent = value;
+  }
+
+  function mapValue(item, measure) {
+    if (measure === 'leftover') return item.leftover;
+    if (measure === 'required') return item.requiredGross;
+    if (measure === 'price') return item.state.rpp;
+    return item.ratio;
+  }
+
+  function mapValueLabel(item, measure) {
+    if (measure === 'leftover') return signedMoney(item.leftover);
+    if (measure === 'required') return compactMoney(item.requiredGross);
+    if (measure === 'price') return item.state.rpp.toFixed(1);
+    return ratio(item.ratio);
+  }
+
+  function renderMap(result) {
+    var measure = $('#map-measure').value;
+    currentMapMeasure = measure;
+    var compareCode = $('#compare-state-select').value;
+    var scenarios = DATA.states.map(function (state) {
+      return calculate({
+        careerId: result.career.id,
+        stateCode: state.code,
+        year: result.year,
+        householdId: result.household.id,
+        percentileKey: result.percentileKey,
+        modeId: result.mode.id,
+        customSalary: result.customSalary || ''
+      });
+    });
+    var values = scenarios.map(function (item) { return mapValue(item, measure); });
+    var minimum = Math.min.apply(null, values);
+    var maximum = Math.max.apply(null, values);
+    var span = maximum - minimum || 1;
+    var higherIsBetter = measure === 'ratio' || measure === 'leftover';
+    var focused = scenarios.filter(function (item) { return item.state.code === (mapFocusedStateCode || result.state.code); })[0] || result;
+    var scoreFor = function (item) {
+      var raw = (mapValue(item, measure) - minimum) / span;
+      var score = higherIsBetter ? raw : 1 - raw;
+      return clamp(score, 0, 1);
+    };
+    $('#atlas-map').innerHTML = scenarios.map(function (item) {
+      var layout = MAP_LAYOUT[item.state.code];
+      if (!layout) return '';
+      var score = scoreFor(item);
+      var color = 'hsl(' + Math.round(36 + score * 44) + ', ' + Math.round(76 + score * 10) + '%, ' + Math.round(55 + score * 10) + '%)';
+      var active = item.state.code === result.state.code;
+      var compare = item.state.code === compareCode;
+      return '<button class=\"map-state' + (active ? ' active' : '') + (compare ? ' compare' : '') + '\" type=\"button\" data-map-state=\"' + item.state.code + '\" style=\"grid-column:' + layout[0] + ';grid-row:' + layout[1] + ';--map-color:' + color + '\" title=\"' + item.state.name + ': ' + mapValueLabel(item, measure) + '\"><span>' + item.state.code + '</span></button>';
+    }).join('');
+    $all('[data-map-state]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        mapFocusedStateCode = button.getAttribute('data-map-state');
+        renderMap(result);
+      });
+    });
+    setText('#map-selected-state', focused.state.name);
+    setText('#map-selected-copy', focused.state.name + ' gives this ' + result.career.name + ' scenario ' + mapValueLabel(focused, measure) + ' on the selected map lens.');
+    $('#map-selected-detail').innerHTML = [
+      ['Take-home / month', money(focused.takeHome), ''],
+      ['Modeled budget', money(focused.monthlyBudget), ''],
+      ['Leftover / month', signedMoney(focused.leftover), focused.leftover >= 0 ? 'good' : 'tight'],
+      ['Salary needed', compactMoney(focused.requiredGross), ''],
+      ['Housing share', percent(focused.housingShare), '']
+    ].map(function (row) {
+      return '<div class=\"map-story-row\"><span>' + row[0] + '</span><strong class=\"' + row[2] + '\">' + row[1] + '</strong></div>';
+    }).join('');
+    var compareButton = $('#map-compare-button');
+    if (compareButton) compareButton.disabled = focused.state.code === compareCode;
   }
 
   function renderKpis(result) {
@@ -305,6 +386,9 @@
     setText('#housing-share-value', percent(result.housingShare));
     renderKpis(result);
     renderGauge(result);
+    if ($('#map-year-scrubber')) $('#map-year-scrubber').value = result.year;
+    setText('#map-year-label', String(result.year));
+    renderMap(result);
     renderComparison(result, comparison);
     renderWaterfall(result);
     renderDrivers(result);
@@ -345,6 +429,17 @@
     $all('#career-select, #state-select, #compare-state-select, #year-select, #household-select, #percentile-select, #mode-select, #custom-salary, #rank-measure').forEach(function (element) {
       element.addEventListener('input', renderDashboard);
       element.addEventListener('change', renderDashboard);
+    });
+    $('#map-measure').addEventListener('change', renderDashboard);
+    $('#map-year-scrubber').addEventListener('input', function () {
+      $('#year-select').value = $('#map-year-scrubber').value;
+      renderDashboard();
+    });
+    $('#map-compare-button').addEventListener('click', function () {
+      if (mapFocusedStateCode) {
+        $('#compare-state-select').value = mapFocusedStateCode;
+        renderDashboard();
+      }
     });
     $all('[data-chart-measure]').forEach(function (button) {
       button.addEventListener('click', function () {
