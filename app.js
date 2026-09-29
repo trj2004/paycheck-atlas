@@ -194,21 +194,56 @@
       var score = higherIsBetter ? raw : 1 - raw;
       return clamp(score, 0, 1);
     };
-    $('#atlas-map').innerHTML = scenarios.map(function (item) {
-      var layout = MAP_LAYOUT[item.state.code];
-      if (!layout) return '';
-      var score = scoreFor(item);
-      var color = 'hsl(' + Math.round(36 + score * 44) + ', ' + Math.round(76 + score * 10) + '%, ' + Math.round(55 + score * 10) + '%)';
-      var active = item.state.code === result.state.code;
-      var compare = item.state.code === compareCode;
-      return '<button class=\"map-state' + (active ? ' active' : '') + (compare ? ' compare' : '') + '\" type=\"button\" data-map-state=\"' + item.state.code + '\" style=\"grid-column:' + layout[0] + ';grid-row:' + layout[1] + ';--map-color:' + color + '\" title=\"' + item.state.name + ': ' + mapValueLabel(item, measure) + '\"><span>' + item.state.code + '</span></button>';
-    }).join('');
-    $all('[data-map-state]').forEach(function (button) {
-      button.addEventListener('click', function () {
-        mapFocusedStateCode = button.getAttribute('data-map-state');
-        renderMap(result);
+    var mapHost = $('#atlas-map');
+    var mapObject = mapHost.querySelector('object');
+    if (!mapObject) {
+      mapHost.innerHTML = '<object id=\"state-map-object\" class=\"state-map-object\" type=\"image/svg+xml\" data=\"assets/us_map.svg\" aria-label=\"United States state affordability map\"></object>';
+      mapObject = mapHost.querySelector('object');
+      mapObject.addEventListener('load', function () { renderMap(result); });
+    }
+    var mapDocument = mapObject.contentDocument;
+    if (mapDocument) {
+      scenarios.forEach(function (item) {
+        var group = mapDocument.getElementById(item.state.code);
+        if (!group) return;
+        var score = scoreFor(item);
+        var color = 'hsl(' + Math.round(36 + score * 44) + ', ' + Math.round(76 + score * 10) + '%, ' + Math.round(55 + score * 10) + '%)';
+        var active = item.state.code === result.state.code;
+        var compare = item.state.code === compareCode;
+        var stroke = active ? '#c9f56a' : compare ? '#ff9c63' : '#1b2c36';
+        var strokeWidth = active || compare ? '3' : '1.25';
+        group.setAttribute('data-map-state', item.state.code);
+        group.setAttribute('tabindex', '0');
+        group.setAttribute('aria-label', item.state.name + ': ' + mapValueLabel(item, measure));
+        group.style.cursor = 'pointer';
+        group.onclick = function () {
+          mapFocusedStateCode = item.state.code;
+          renderMap(result);
+        };
+        group.onkeydown = function (event) {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            mapFocusedStateCode = item.state.code;
+            renderMap(result);
+          }
+        };
+        var title = group.querySelector('title');
+        if (!title) {
+          title = mapDocument.createElementNS('http://www.w3.org/2000/svg', 'title');
+          group.insertBefore(title, group.firstChild);
+        }
+        title.textContent = item.state.name + ' · ' + mapValueLabel(item, measure);
+        group.querySelectorAll('path.boundary').forEach(function (path) {
+          path.style.fill = color;
+          path.style.stroke = stroke;
+          path.style.strokeWidth = strokeWidth;
+          path.style.transition = 'fill .25s ease, stroke .2s ease, stroke-width .2s ease';
+        });
+        group.querySelectorAll('text').forEach(function (label) {
+          label.style.pointerEvents = 'none';
+        });
       });
-    });
+    }
     setText('#map-selected-state', focused.state.name);
     setText('#map-selected-copy', focused.state.name + ' gives this ' + result.career.name + ' scenario ' + mapValueLabel(focused, measure) + ' on the selected map lens.');
     $('#map-selected-detail').innerHTML = [
@@ -504,6 +539,36 @@
     $('#home-trend').innerHTML = lineSvg(trend, ['#c9f56a', '#ff9c63'], ['Salary', 'Budget']);
   }
 
+  function renderHomePassport() {
+    var careerId = $('#home-career-select').value;
+    var stateA = $('#home-state-a').value;
+    var stateB = $('#home-state-b').value;
+    var scenarioA = calculate({ careerId: careerId, stateCode: stateA, year: 2024, householdId: 'solo', percentileKey: 'median', modeId: 'balanced' });
+    var scenarioB = calculate({ careerId: careerId, stateCode: stateB, year: 2024, householdId: 'solo', percentileKey: 'median', modeId: 'balanced' });
+    setText('#home-passport-a', '');
+    setText('#home-passport-b', '');
+    $('#home-passport-a').innerHTML = '<small>' + scenarioA.state.name + '</small><strong>' + signedMoney(scenarioA.leftover) + ' / mo</strong>';
+    $('#home-passport-b').innerHTML = '<small>' + scenarioB.state.name + '</small><strong>' + signedMoney(scenarioB.leftover) + ' / mo</strong>';
+    var delta = scenarioA.leftover - scenarioB.leftover;
+    $('#home-passport-result').innerHTML = '<span>' + scenarioA.career.name + ' · median salary · solo renter</span><strong>' + money(Math.abs(delta)) + ' monthly difference</strong><span class=\"passport-delta\">' + (delta >= 0 ? scenarioA.state.code + ' has more room' : scenarioB.state.code + ' has more room') + '</span>';
+  }
+
+  function initHomePassport() {
+    selectOptions($('#home-career-select'), DATA.careers, 'id', function (item) { return item.name; });
+    selectOptions($('#home-state-a'), DATA.states, 'code', function (item) { return item.name; });
+    selectOptions($('#home-state-b'), DATA.states, 'code', function (item) { return item.name; });
+    $('#home-career-select').value = 'nurse';
+    $('#home-state-a').value = 'TX';
+    $('#home-state-b').value = 'CA';
+    $all('#home-career-select, #home-state-a, #home-state-b').forEach(function (element) {
+      element.addEventListener('change', renderHomePassport);
+    });
+    renderHomePassport();
+  }
+
   if (page === 'dashboard') initDashboard();
-  if (page === 'home') renderHome();
+  if (page === 'home') {
+    renderHome();
+    initHomePassport();
+  }
 })();
