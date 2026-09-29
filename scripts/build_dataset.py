@@ -13,9 +13,9 @@ from __future__ import annotations
 
 import argparse
 import io
+import json
 import logging
 import os
-import re
 import zipfile
 from pathlib import Path
 
@@ -121,6 +121,7 @@ def read_bls_year(year: int, force: bool = False) -> pd.DataFrame:
 
     state_text = data[state_column].astype("string").str.upper().str.strip()
     data["state_code"] = state_text.map(STATE_NAMES)
+    data.loc[data["state_code"].isna(), "state_code"] = state_text.where(state_text.isin(STATE_FIPS.values()))
     data.loc[data["state_code"].isna(), "state_code"] = (
         data["source_sheet"].astype("string").str.upper().str.extract(r"\b([A-Z]{2})\b", expand=False)
     )
@@ -167,7 +168,7 @@ def read_acs_year(year: int, force: bool = False) -> pd.DataFrame:
         params["key"] = api_key
     cache = RAW_DIR / f"acs_state_{year}.json"
     if cache.exists() and not force:
-        payload = pd.read_json(cache)
+        payload = json.loads(cache.read_text(encoding="utf-8"))
     else:
         response = requests.get(url, params=params, headers={"User-Agent": USER_AGENT}, timeout=90)
         response.raise_for_status()
