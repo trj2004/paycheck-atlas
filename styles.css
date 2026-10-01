@@ -252,6 +252,48 @@ button, select { cursor: pointer; }
 .budget-room.room-utilities { --room-color: #e6d76a; }
 .budget-room.room-lifestyle { --room-color: var(--violet); }
 .budget-foundation { min-height: 51px; }
+.budget-house { min-height: 515px; padding-top: 55px; }
+.budget-house[data-home-profile="studio"] .budget-roof { right: 19%; left: 19%; }
+.budget-house[data-home-profile="two-bedroom"] .budget-roof { right: 7%; left: 7%; }
+.budget-house[data-home-profile="three-bedroom"] .budget-roof { right: 4%; left: 4%; border-radius: 70px 70px 0 0; }
+.blueprint-profile { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 8px 5px; color: var(--lime); font-family: ui-monospace, monospace; font-size: 8px; letter-spacing: .1em; }
+.blueprint-profile b { color: var(--muted); font-size: 9px; font-weight: 500; letter-spacing: 0; }
+.blueprint-drawing { height: 302px; overflow: hidden; border: 1px solid rgba(116, 200, 255, .25); border-radius: 9px; background: linear-gradient(180deg, rgba(116, 200, 255, .07), rgba(7, 13, 18, .18)); transition: opacity .2s ease; }
+.blueprint-drawing.house-swap-in { animation: blueprint-swap .55s ease both; }
+.blueprint-drawing svg { display: block; width: 100%; height: 100%; }
+.blueprint-grid { fill: url(#blueprint-grid-pattern); opacity: .55; }
+.blueprint-shell { fill: rgba(8, 14, 18, .54); stroke: rgba(201, 245, 106, .55); stroke-width: 2; }
+.blueprint-room { --room-color: var(--blue); cursor: pointer; outline: none; }
+.blueprint-room[data-house-category="housing"] { --room-color: var(--orange); }
+.blueprint-room[data-house-category="food"] { --room-color: var(--lime); }
+.blueprint-room[data-house-category="transport"] { --room-color: var(--blue); }
+.blueprint-room[data-house-category="health"] { --room-color: var(--mint); }
+.blueprint-room[data-house-category="utilities"] { --room-color: #e6d76a; }
+.blueprint-room[data-house-category="lifestyle"] { --room-color: var(--violet); }
+.blueprint-room rect { fill: color-mix(in srgb, var(--room-color) 11%, #091219); stroke: color-mix(in srgb, var(--room-color) 63%, transparent); stroke-width: 1.5; transition: fill .2s ease, stroke-width .2s ease, filter .2s ease; }
+.blueprint-room:hover rect, .blueprint-room:focus rect, .blueprint-room.active rect { fill: color-mix(in srgb, var(--room-color) 25%, #091219); stroke-width: 3; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--room-color) 45%, transparent)); }
+.blueprint-room text { fill: var(--muted); font-family: Inter, ui-sans-serif, sans-serif; pointer-events: none; }
+.blueprint-room .blueprint-room-label { font-size: 12px; font-weight: 800; }
+.blueprint-room .blueprint-room-value { fill: var(--ink); font-family: ui-monospace, monospace; font-size: 13px; font-weight: 900; }
+.blueprint-room .blueprint-room-share { fill: var(--room-color); font-family: ui-monospace, monospace; font-size: 9px; }
+.blueprint-room.compact .blueprint-room-label { font-size: 9px; }
+.blueprint-room.compact .blueprint-room-value { font-size: 10px; }
+.blueprint-home-title { fill: var(--lime); font-family: ui-monospace, monospace; font-size: 9px; font-weight: 900; letter-spacing: .13em; }
+.blueprint-home-note { fill: var(--subtle); font-family: Inter, ui-sans-serif, sans-serif; font-size: 9px; }
+.blueprint-garage-line { stroke: var(--blue); stroke-width: 1; stroke-dasharray: 4 4; opacity: .7; }
+.blueprint-foundation { display: grid; grid-template-columns: 1fr 103px; gap: 8px; margin-top: 9px; }
+.blueprint-foundation-room { --room-color: var(--violet); display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 5px 10px; min-width: 0; padding: 9px 11px; border: 1px solid color-mix(in srgb, var(--room-color) 47%, transparent); border-radius: 7px; color: var(--ink); background: color-mix(in srgb, var(--room-color) 10%, #091219); text-align: left; transition: background .2s ease, border-color .2s ease, transform .2s ease; }
+.blueprint-foundation-room:hover, .blueprint-foundation-room:focus-visible, .blueprint-foundation-room.active { border-color: var(--room-color); background: color-mix(in srgb, var(--room-color) 20%, #091219); outline: none; transform: translateY(-2px); }
+.blueprint-foundation-room span, .blueprint-foundation-room strong, .blueprint-foundation-room small { display: block; }
+.blueprint-foundation-room span { color: var(--violet); font-family: ui-monospace, monospace; font-size: 8px; letter-spacing: .08em; }
+.blueprint-foundation-room strong { color: var(--ink); font-size: 13px; }
+.blueprint-foundation-room small { grid-column: 1; color: var(--subtle); font-size: 8px; }
+.blueprint-door { display: grid; min-height: 52px; place-content: center; padding: 5px; border: 1px solid rgba(201, 245, 106, .48); border-bottom: 0; border-radius: 7px 7px 0 0; color: var(--lime); background: rgba(201, 245, 106, .08); text-align: center; }
+.blueprint-door span, .blueprint-door strong { display: block; }
+.blueprint-door span { font-family: ui-monospace, monospace; font-size: 7px; letter-spacing: .09em; }
+.blueprint-door strong { margin-top: 4px; font-size: 14px; letter-spacing: -.04em; }
+.budget-porch { margin: 8px 10px 0; padding-top: 8px; border-top: 1px solid rgba(120, 240, 190, .2); }
+.budget-porch p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.45; }
 
 .home-state-swipe { --split: 50%; position: relative; min-height: 118px; margin-top: 20px; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: #101820; }
 .swipe-panel { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; padding: 18px 22px; }
@@ -743,6 +785,11 @@ dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
   25% { transform: translateX(-2px); }
   75% { transform: translateX(2px); }
 }
+@keyframes blueprint-swap {
+  0% { opacity: .15; transform: scale(.96); }
+  65% { opacity: 1; transform: scale(1.01); }
+  100% { opacity: 1; transform: scale(1); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -808,12 +855,16 @@ dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
   .budget-inflow { grid-template-columns: 1fr auto; margin-inline: 18px; }
   .budget-inflow i { grid-column: 1 / -1; grid-row: 2; }
   .budget-inflow b { grid-column: 2; grid-row: 1; }
-  .budget-house { min-height: 405px; margin-inline: 18px; padding-inline: 10px; }
+  .budget-house { min-height: 525px; margin-inline: 18px; padding-inline: 10px; }
   .budget-roof { right: 7%; left: 7%; }
   .budget-facade { grid-template-columns: repeat(2, 1fr); height: 270px; padding: 7px; gap: 7px; }
   .budget-room { padding: 9px; }
   .budget-room strong { font-size: 14px; }
   .budget-porch { grid-template-columns: 92px 1fr; margin-inline: 8px; }
+  .blueprint-profile { display: block; }
+  .blueprint-profile b { display: block; margin-top: 4px; }
+  .blueprint-drawing { height: 282px; }
+  .blueprint-foundation { grid-template-columns: 1fr; }
   .house-money-track { padding-inline: 18px; }
   .time-machine-section { padding-top: 58px; }
   .time-machine-board { padding: 18px; }

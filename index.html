@@ -69,16 +69,10 @@
           <div class="budget-house" id="home-house-canvas" role="group" aria-label="Interactive house budget cross-section">
             <div class="budget-roof"><span>ONE LIFE · ONE MONTH</span><b>Where the paycheck goes</b></div>
             <div class="house-money-particle particle-one">$</div><div class="house-money-particle particle-two">$</div><div class="house-money-particle particle-three">$</div>
-            <div class="budget-facade">
-              <button class="house-room budget-room room-housing active" type="button" data-house-category="housing"><span class="room-icon">⌂</span><span class="room-name">Housing · roof</span><strong id="home-room-housing">$1,200</strong><small id="home-room-housing-share">—</small><i></i></button>
-              <button class="house-room budget-room room-food" type="button" data-house-category="food"><span class="room-icon">✦</span><span class="room-name">Food · kitchen</span><strong id="home-room-food">$460</strong><small id="home-room-food-share">—</small><i></i></button>
-              <button class="house-room budget-room room-transport" type="button" data-house-category="transport"><span class="room-icon">↗</span><span class="room-name">Transport · garage</span><strong id="home-room-transport">$445</strong><small id="home-room-transport-share">—</small><i></i></button>
-              <button class="house-room budget-room room-health" type="button" data-house-category="health"><span class="room-icon">+</span><span class="room-name">Health care · bath</span><strong id="home-room-health">$315</strong><small id="home-room-health-share">—</small><i></i></button>
-              <button class="house-room budget-room room-utilities" type="button" data-house-category="utilities"><span class="room-icon">⌁</span><span class="room-name">Utilities · lights</span><strong id="home-room-utilities">$190</strong><small id="home-room-utilities-share">—</small><i></i></button>
-              <button class="house-room budget-room room-lifestyle" type="button" data-house-category="lifestyle"><span class="room-icon">◇</span><span class="room-name">Other life costs</span><strong id="home-room-lifestyle">$245</strong><small id="home-room-lifestyle-share">—</small><i></i></button>
-            </div>
-            <button class="house-room budget-foundation room-savings" type="button" data-house-category="savings"><span><span class="room-icon">▰</span><span class="room-name">Financial foundation · savings target</span></span><strong id="home-room-savings">$350</strong><small id="home-room-savings-share">—</small><i></i></button>
-            <div class="budget-porch"><div class="budget-door"><span>ROOM LEFT</span><strong id="home-house-leftover">$0</strong></div><p id="home-house-budget-caption">The leftover amount is the money remaining after the modeled housing, needs, personal spending, and savings plan.</p></div>
+            <div class="blueprint-profile"><span id="home-house-type">1 BEDROOM HOME</span><b id="home-house-profile">1 bed · 1 bath · 750 sq ft</b></div>
+            <div class="blueprint-drawing" id="home-house-drawing"></div>
+            <div class="blueprint-foundation"><button class="blueprint-foundation-room" type="button" data-house-category="savings"><span>FINANCIAL FOUNDATION · SAVINGS</span><strong id="home-house-savings-value">$350 / mo</strong><small id="home-house-savings-share">—</small></button><div class="blueprint-door"><span>ROOM LEFT</span><strong id="home-house-leftover">$0</strong></div></div>
+            <div class="budget-porch"><p id="home-house-budget-caption">The leftover amount is the money remaining after the modeled housing, needs, personal spending, and savings plan.</p></div>
           </div>
           <div class="house-money-track"><div><span>Modeled plan consumes</span><strong id="home-house-budget">$0</strong></div><div class="house-money-bar"><i id="home-house-budget-fill"></i></div><div class="house-money-labels"><span>Plan share of take-home pay</span><span>Click a room to inspect the finding</span></div></div>
         </article>

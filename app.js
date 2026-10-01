@@ -602,9 +602,95 @@
     return result.rows.filter(function (item) { return item.key === key; })[0] || { key: key, label: key, value: 0, className: 'other' };
   }
 
+  function blueprintRoomMarkup(result, room) {
+    var row = houseRow(result, room.category);
+    var compact = room.h < 62;
+    var amount = room.category === 'housing' ? 'home profile' : money(row.value);
+    var profile = result.housingProfile;
+    var profileShort = (profile.bedrooms === 0 ? 'studio' : profile.bedrooms + ' bd') + ' · ' + profile.bathrooms + ' bath · ' + Number(profile.sqft).toLocaleString('en-US') + ' sq ft';
+    var share = room.category === 'housing' ? profileShort : percent(row.value / result.monthlyBudget) + ' of plan';
+    var label = escapeHtml(room.label);
+    var aria = escapeHtml(room.label + ' · ' + amount + ' · ' + share);
+    return '<g class="blueprint-room' + (compact ? ' compact' : '') + (room.category === activeHomeHouseCategory ? ' active' : '') + '" data-house-category="' + room.category + '" role="button" tabindex="0" aria-pressed="' + (room.category === activeHomeHouseCategory ? 'true' : 'false') + '" aria-label="' + aria + '"><title>' + aria + '</title><rect class="blueprint-room-surface" x="' + room.x + '" y="' + room.y + '" width="' + room.w + '" height="' + room.h + '" rx="6"></rect><text class="blueprint-room-label" x="' + (room.x + 14) + '" y="' + (room.y + (compact ? 17 : 25)) + '">' + label + '</text><text class="blueprint-room-value" x="' + (room.x + 14) + '" y="' + (room.y + (compact ? 32 : 48)) + '">' + escapeHtml(amount) + '</text>' + (compact ? '' : '<text class="blueprint-room-share" x="' + (room.x + 14) + '" y="' + (room.y + 65) + '">' + escapeHtml(share) + '</text>') + '</g>';
+  }
+
+  function blueprintLayout(result) {
+    var garage = { category: 'transport', label: 'Garage · commute', x: 535, y: 350, w: 170, h: 39 };
+    var layouts = {
+      studio: [
+        { category: 'lifestyle', label: 'Open living / sleep', x: 55, y: 62, w: 365, h: 205 },
+        { category: 'food', label: 'Kitchen · food', x: 55, y: 277, w: 365, h: 55 },
+        { category: 'health', label: 'Bathroom · health', x: 440, y: 62, w: 265, h: 125 },
+        { category: 'utilities', label: 'Utility / energy', x: 440, y: 197, w: 265, h: 135 },
+        garage
+      ],
+      'one-bedroom': [
+        { category: 'lifestyle', label: 'Living room · other', x: 55, y: 62, w: 300, h: 205 },
+        { category: 'food', label: 'Kitchen · food', x: 55, y: 277, w: 300, h: 55 },
+        { category: 'housing', label: 'Bedroom 1', x: 375, y: 62, w: 330, h: 125 },
+        { category: 'health', label: 'Bathroom · health', x: 375, y: 197, w: 155, h: 135 },
+        { category: 'utilities', label: 'Utility / energy', x: 550, y: 197, w: 155, h: 135 },
+        garage
+      ],
+      'two-bedroom': [
+        { category: 'lifestyle', label: 'Living room · other', x: 55, y: 62, w: 300, h: 175 },
+        { category: 'food', label: 'Kitchen · food', x: 55, y: 247, w: 300, h: 85 },
+        { category: 'housing', label: 'Bedroom 1', x: 375, y: 62, w: 155, h: 125 },
+        { category: 'housing', label: 'Bedroom 2', x: 550, y: 62, w: 155, h: 125 },
+        { category: 'health', label: 'Bathroom · health', x: 375, y: 197, w: 155, h: 135 },
+        { category: 'utilities', label: 'Utility / energy', x: 550, y: 197, w: 155, h: 135 },
+        garage
+      ],
+      'three-bedroom': [
+        { category: 'lifestyle', label: 'Living room · other', x: 55, y: 62, w: 250, h: 155 },
+        { category: 'food', label: 'Kitchen · food', x: 55, y: 227, w: 250, h: 105 },
+        { category: 'housing', label: 'Bedroom 1', x: 325, y: 62, w: 175, h: 125 },
+        { category: 'housing', label: 'Bedroom 2', x: 520, y: 62, w: 185, h: 125 },
+        { category: 'housing', label: 'Bedroom 3', x: 325, y: 197, w: 175, h: 135 },
+        { category: 'health', label: 'Bathroom · health', x: 520, y: 197, w: 185, h: 135 },
+        garage
+      ]
+    };
+    return layouts[result.housingProfile.id] || layouts['one-bedroom'];
+  }
+
+  function renderHouseBlueprint(result) {
+    var drawing = $('#home-house-drawing');
+    if (!drawing) return;
+    var rooms = blueprintLayout(result);
+    var roomMarkup = rooms.map(function (room) { return blueprintRoomMarkup(result, room); }).join('');
+    var profileLabel = housingSpec(result.housingProfile);
+    drawing.innerHTML = '<svg viewBox="0 0 760 410" role="img" aria-label="' + escapeHtml(profileLabel + ' interactive floor plan') + '"><defs><pattern id="blueprint-grid-pattern" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M 24 0 L 0 0 0 24" fill="none" stroke="rgba(116,200,255,.13)" stroke-width="1"></path></pattern></defs><rect class="blueprint-grid" width="760" height="410"></rect><text class="blueprint-home-title" x="24" y="28">' + escapeHtml(result.housingProfile.bedrooms === 0 ? 'STUDIO LAYOUT' : result.housingProfile.bedrooms + ' BEDROOM LAYOUT') + '</text><text class="blueprint-home-note" x="24" y="45">Rent is the roof; rooms show the cost categories that support the lifestyle.</text><rect class="blueprint-shell" x="40" y="48" width="680" height="294" rx="7"></rect>' + roomMarkup + '<path class="blueprint-garage-line" d="M 535 342 L 535 350 M 705 342 L 705 350"></path><text class="blueprint-home-note" x="535" y="402">transport leaves the house through the commute</text></svg>';
+    setText('#home-house-type', result.housingProfile.bedrooms === 0 ? 'STUDIO HOME' : result.housingProfile.bedrooms + ' BEDROOM HOME');
+    setText('#home-house-profile', profileLabel);
+    setText('#home-house-savings-value', money(houseRow(result, 'savings').value) + ' / mo');
+    setText('#home-house-savings-share', percent(houseRow(result, 'savings').value / result.monthlyBudget) + ' of plan');
+    drawing.classList.remove('house-swap-in');
+    void drawing.offsetWidth;
+    drawing.classList.add('house-swap-in');
+    var clickTargets = $all('.blueprint-room', drawing);
+    var foundation = $('.blueprint-foundation-room');
+    if (foundation) clickTargets.push(foundation);
+    clickTargets.forEach(function (target) {
+      var category = target.getAttribute('data-house-category');
+      target.classList.toggle('active', category === activeHomeHouseCategory);
+      target.setAttribute('aria-pressed', category === activeHomeHouseCategory ? 'true' : 'false');
+      target.onclick = function () {
+        activeHomeHouseCategory = category;
+        renderHomeHouse(result);
+      };
+      target.onkeydown = function (event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          activeHomeHouseCategory = category;
+          renderHomeHouse(result);
+        }
+      };
+    });
+  }
+
   function renderHomeHouse(result) {
     if (!$('#house-lab-title')) return;
-    var roomKeys = ['housing', 'food', 'transport', 'health', 'utilities', 'lifestyle', 'savings'];
     var roomLabels = { housing: 'Housing', food: 'Food', transport: 'Transportation', health: 'Health care', utilities: 'Utilities', lifestyle: 'Other life costs', savings: 'Savings target' };
     var roomCopy = {
       housing: 'Housing costs ' + money(result.housingCost) + ' per month, or ' + percent(result.housingCost / result.takeHome) + ' of take-home pay. A move between states changes this number before the rest of the plan is considered.',
@@ -634,14 +720,7 @@
     setText('#home-house-leftover', signedMoney(result.leftover));
     var fill = $('#home-house-budget-fill');
     if (fill) fill.style.width = clamp(result.monthlyBudget / result.takeHome * 100, 0, 100) + '%';
-    roomKeys.forEach(function (key) {
-      var row = houseRow(result, key);
-      setText('#home-room-' + key, money(row.value));
-      setText('#home-room-' + key + '-share', percent(row.value / result.monthlyBudget) + ' of plan');
-      var roomButton = $all('.house-room').filter(function (button) { return button.getAttribute('data-house-category') === key; })[0];
-      var roomMeter = roomButton ? roomButton.querySelector('i') : null;
-      if (roomMeter) roomMeter.style.width = clamp(row.value / result.monthlyBudget * 100, 7, 100) + '%';
-    });
+    renderHouseBlueprint(result);
     var pressure = result.rows.filter(function (item) { return item.value > 0 && item.key !== 'savings'; }).sort(function (a, b) { return b.value - a.value; })[0] || houseRow(result, 'housing');
     setText('#home-house-analysis-title', roomLabels[activeHomeHouseCategory] + ' enters the picture.');
     setText('#home-house-analysis-copy', roomCopy[activeHomeHouseCategory]);
@@ -652,16 +731,12 @@
     setText('#home-house-reading-copy', 'The rooms are monthly categories, not separate bills. Together they create the modeled plan; the foundation is the savings target, and the door is the remaining income after the plan.');
     var canvas = $('#home-house-canvas');
     if (canvas) {
+      canvas.setAttribute('data-home-profile', result.housingProfile.id);
       canvas.setAttribute('data-pressure', result.leftover < 0 ? 'gap' : result.ratio < 1.2 ? 'strained' : 'comfortable');
       canvas.classList.remove('scenario-update');
       void canvas.offsetWidth;
       canvas.classList.add('scenario-update');
     }
-    $all('.house-room').forEach(function (button) {
-      var active = button.getAttribute('data-house-category') === activeHomeHouseCategory;
-      button.classList.toggle('active', active);
-      button.setAttribute('aria-pressed', active ? 'true' : 'false');
-    });
     var arrival = $('#home-career-arrival');
     if (arrival) {
       arrival.classList.remove('scenario-update');
@@ -961,13 +1036,6 @@
         renderHomeTimeMachine(result);
       });
     }
-    $all('.house-room').forEach(function (button) {
-      button.addEventListener('click', function () {
-        activeHomeHouseCategory = button.getAttribute('data-house-category');
-        var scenario = calculate({ careerId: $('#home-career-select').value, stateCode: $('#home-state-a').value, year: latestYear(), householdId: 'solo', percentileKey: 'median', modeId: 'balanced', housingId: $('#home-housing-select').value });
-        renderHomeHouse(scenario);
-      });
-    });
     renderHomePassport();
   }
 
