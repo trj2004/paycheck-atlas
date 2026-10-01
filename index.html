@@ -25,21 +25,21 @@
       <div class="hero-visual">
         <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
         <div class="salary-card">
-          <div class="salary-card-top"><span class="tiny-label">LIVE SCENARIO</span><span class="status-pill">MEDIAN</span></div>
-          <div class="salary-role"><span class="role-icon">✚</span><div><strong>Registered Nurse</strong><small>Texas · Solo renter</small></div></div>
-          <div class="salary-amount">$5,672<span>/mo</span></div>
-          <div class="mini-flow"><div class="mini-flow-row"><span>Take-home pay</span><b>$5,672</b></div><div class="mini-flow-row muted"><span>Modeled plan</span><b>−$3,394</b></div><div class="flow-line"><i style="width: 67%"></i></div><div class="mini-flow-row leftover"><span>Breathing room</span><b>$2,278</b></div></div>
-          <div class="score-row"><span>Affordability ratio</span><strong>1.67×</strong></div>
+          <div class="salary-card-top"><span class="tiny-label">ILLUSTRATIVE PERSONA · MARLOWE REYES</span><span class="status-pill">LIVE</span></div>
+          <div class="salary-role"><span class="role-icon">✚</span><div><strong id="home-hero-role">Registered Nurse</strong><small id="home-hero-location">Texas · Solo renter</small></div></div>
+          <div class="salary-amount" id="home-hero-take-home">$5,672<span>/mo</span></div>
+          <div class="mini-flow"><div class="mini-flow-row"><span>Take-home pay</span><b id="home-hero-take-home-row">$5,672</b></div><div class="mini-flow-row muted"><span>Modeled plan</span><b id="home-hero-budget">−$3,394</b></div><div class="flow-line"><i id="home-hero-flow" style="width: 67%"></i></div><div class="mini-flow-row leftover"><span>Breathing room</span><b id="home-hero-leftover">$2,278</b></div></div>
+          <div class="score-row"><span>Affordability ratio</span><strong id="home-hero-ratio">1.67×</strong></div>
         </div>
-        <div class="floating-chip chip-left"><span>⌂</span><div><small>Housing share</small><b>29%</b></div></div>
-        <div class="floating-chip chip-right"><span>↗</span><div><small>Plan surplus</small><b>TX · +$2.3k</b></div></div>
+        <div class="floating-chip chip-left"><span>⌂</span><div><small>Housing share</small><b id="home-hero-housing">29%</b></div></div>
+        <div class="floating-chip chip-right"><span>↗</span><div><small>Plan surplus</small><b id="home-hero-chip">TX · +$2.3k</b></div></div>
       </div>
     </section>
 
     <section class="signal-strip"><div class="shell signal-grid"><div><span class="signal-kicker">THE QUESTION</span><p>How does location affect the purchasing power of a full-time salary?</p></div><div class="signal-note"><span class="signal-line"></span><span>Income is only half of the story.<br><em>The rest is where you live.</em></span></div></div></section>
 
     <section class="passport-section shell">
-      <div class="passport-intro"><p class="eyebrow">THE PAYCHECK PASSPORT</p><h2>Send one paycheck<br><span class="gradient-text">across America.</span></h2><p>Choose a career and two places. The passport shows how the same workday changes when the coordinates change.</p><div class="question-stack"><div><span>01</span><strong>Does a higher salary create more room?</strong></div><div><span>02</span><strong>Which expenses change the answer?</strong></div><div><span>03</span><strong>What would the same life require elsewhere?</strong></div></div></div>
+      <div class="passport-intro"><p class="eyebrow">THE PAYCHECK PASSPORT</p><h2>Send one paycheck<br><span class="gradient-text">across America.</span></h2><p>Meet Marlowe Reyes, a fictional paycheck traveler. Choose a career and two places to see how the same workday changes when the coordinates change.</p><div class="persona-note"><span>FICTIONAL LENS</span><strong>Marlowe is a guide, not a real household.</strong></div><div class="question-stack"><div><span>01</span><strong>Does a higher salary create more room?</strong></div><div><span>02</span><strong>Which expenses change the answer?</strong></div><div><span>03</span><strong>What would the same life require elsewhere?</strong></div></div></div>
       <article class="passport-lab">
         <div class="passport-lab-head"><div><span class="card-kicker">LIVE PROTOTYPE SCENARIO</span><h3>One career. Two coordinates.</h3></div><span class="passport-stamp">MOVE IT</span></div>
         <div class="passport-controls"><label><span>Career</span><select id="home-career-select"></select></label><label><span>From</span><select id="home-state-a"></select></label><label><span>To</span><select id="home-state-b"></select></label></div>
@@ -74,7 +74,7 @@
     </section>
 
     <section class="section section-dark shell-wide">
-      <div class="shell"><div class="section-heading compact"><div><p class="eyebrow">02 · The tradeoff</p><h2>Is a higher paycheck<br><span class="gradient-text">actually a better life?</span></h2></div><p class="section-intro">The gap is not only between the cheapest and most expensive states. It is between what people earn and what a basic life asks them to spend.</p></div><div class="insight-grid"><div class="insight-copy"><span class="big-number">3.2×</span><p class="big-label">possible difference in monthly breathing room for the same career, household, and salary level.</p><div class="quote-card"><span class="quote-mark">“</span><p>Affordability is not a personality trait of a state. It is the interaction between a paycheck and a place.</p></div></div><div class="trend-panel"><div class="panel-top"><div><span class="card-kicker">QUESTION 03 · TIME</span><h3>Did the budget get tighter?</h3></div><div class="legend"><span><i class="legend-line salary-line"></i>Take-home</span><span><i class="legend-line cost-line"></i>Plan</span></div></div><div class="trend-chart" id="home-trend"></div><div class="axis-labels"><span>2018</span><span>2024</span></div></div></div></div>
+      <div class="shell"><div class="section-heading compact"><div><p class="eyebrow">02 · The tradeoff</p><h2>Is a higher paycheck<br><span class="gradient-text">actually a better life?</span></h2></div><p class="section-intro">The gap is not only between the cheapest and most expensive states. It is between what people earn and what a basic life asks them to spend.</p></div><div class="insight-grid"><div class="insight-copy"><span class="big-number">3.2×</span><p class="big-label">possible difference in monthly breathing room for the same career, household, and salary level.</p><div class="quote-card"><span class="quote-mark">“</span><p>Affordability is not a personality trait of a state. It is the interaction between a paycheck and a place.</p></div></div><div class="trend-panel"><div class="panel-top"><div><span class="card-kicker">QUESTION 03 · TIME</span><h3>Did the budget get tighter?</h3></div><div class="legend"><span><i class="legend-line salary-line"></i>Take-home</span><span><i class="legend-line cost-line"></i>Plan</span></div></div><div class="trend-chart" id="home-trend"></div><p class="trend-insight" id="home-trend-insight"></p><div class="axis-labels"><span>2018</span><span>2024</span></div></div></div></div>
     </section>
 
     <section class="section shell" id="method">

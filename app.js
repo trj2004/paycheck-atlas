@@ -5,6 +5,7 @@
   var page = document.body.getAttribute('data-page');
   var currentChartMeasure = 'expenses';
   var currentMapMeasure = 'ratio';
+  var currentRankDirection = 'top';
   var mapFocusedStateCode = null;
   var mapZoom = 1;
   var latestRows = [];
@@ -187,6 +188,28 @@
     applyMapZoom();
   }
 
+  function hideMapTooltip() {
+    var tooltip = $('#map-tooltip');
+    if (tooltip) tooltip.classList.remove('visible');
+  }
+
+  function showMapTooltip(event, item, measure, result) {
+    var tooltip = $('#map-tooltip');
+    var mapHost = $('#atlas-map');
+    if (!tooltip || !mapHost) return;
+    var difference = item.leftover - result.leftover;
+    var differenceText = item.state.code === result.state.code
+      ? 'This is the main state'
+      : (difference >= 0 ? '+' + money(difference) + ' more leftover vs ' + result.state.code : '−' + money(Math.abs(difference)) + ' less leftover vs ' + result.state.code);
+    tooltip.innerHTML = '<strong>' + item.state.name + '</strong><span>' + mapValueLabel(item, measure) + ' · map lens</span><span>Leftover: ' + signedMoney(item.leftover) + ' / mo</span><span>' + differenceText + '</span>';
+    var bounds = mapHost.getBoundingClientRect();
+    var left = event.clientX - bounds.left + 14;
+    var top = event.clientY - bounds.top + 14;
+    tooltip.style.left = Math.min(Math.max(left, 10), Math.max(10, bounds.width - 210)) + 'px';
+    tooltip.style.top = Math.min(Math.max(top, 10), Math.max(10, bounds.height - 105)) + 'px';
+    tooltip.classList.add('visible');
+  }
+
   function renderMap(result) {
     var measure = $('#map-measure').value;
     currentMapMeasure = measure;
@@ -218,6 +241,14 @@
     if (!mapSvg) {
       mapHost.innerHTML = window.PAYCHECK_ATLAS_MAP || '<div class="map-loading">Map asset unavailable</div>';
       mapSvg = mapHost.querySelector('svg');
+      if (mapSvg && !$('#map-tooltip')) {
+        var tooltip = document.createElement('div');
+        tooltip.id = 'map-tooltip';
+        tooltip.className = 'map-tooltip';
+        tooltip.setAttribute('role', 'status');
+        tooltip.setAttribute('aria-live', 'polite');
+        mapHost.appendChild(tooltip);
+      }
     }
     if (mapSvg) {
       mapSvg.classList.add('state-map-inline');
@@ -234,6 +265,9 @@
         group.setAttribute('tabindex', '0');
         group.setAttribute('aria-label', item.state.name + ': ' + mapValueLabel(item, measure));
         group.style.cursor = 'pointer';
+        group.onmouseenter = function (event) { showMapTooltip(event, item, measure, result); };
+        group.onmousemove = function (event) { showMapTooltip(event, item, measure, result); };
+        group.onmouseleave = hideMapTooltip;
         group.onclick = function () {
           mapFocusedStateCode = item.state.code;
           renderMap(result);
@@ -351,15 +385,18 @@
       item.rankValue = measure === 'ratio' ? item.ratio : measure === 'leftover' ? item.leftover : measure === 'salary' ? item.salary : item.state.rpp;
       return item;
     });
-    var ascending = measure === 'price';
-    values.sort(function (a, b) { return ascending ? a.rankValue - b.rankValue : b.rankValue - a.rankValue; });
+    var favorableValue = function (item) { return measure === 'price' ? -item.rankValue : item.rankValue; };
+    values.sort(function (a, b) {
+      var difference = favorableValue(b) - favorableValue(a);
+      return currentRankDirection === 'top' ? difference : -difference;
+    });
     var visible = values.slice(0, 10);
-    var min = Math.min.apply(null, visible.map(function (item) { return item.rankValue; }));
-    var max = Math.max.apply(null, visible.map(function (item) { return item.rankValue; }));
+    var min = Math.min.apply(null, visible.map(favorableValue));
+    var max = Math.max.apply(null, visible.map(favorableValue));
     var span = max - min || 1;
     var format = measure === 'ratio' ? ratio : measure === 'price' ? function (v) { return v.toFixed(1); } : compactMoney;
     $('#ranked-list').innerHTML = visible.map(function (item, index) {
-      var fill = measure === 'price' ? ((max - item.rankValue) / span * 55 + 45) : ((item.rankValue - min) / span * 55 + 45);
+      var fill = ((favorableValue(item) - min) / span * 55 + 45);
       return '<div class="ranked-row"><span class="rank-number">' + String(index + 1).padStart(2, '0') + '</span><span class="rank-name">' + item.state.name + '</span><div class="rank-bar-track"><div class="rank-bar" style="width:' + fill + '%"></div></div><span class="rank-value">' + format(item.rankValue) + '</span></div>';
     }).join('');
   }
@@ -401,6 +438,17 @@
       { values: DATA.years.map(function (year) { return calculate({ careerId: result.career.id, stateCode: result.state.code, year: year, householdId: result.household.id, percentileKey: result.percentileKey, modeId: result.mode.id, customSalary: result.customSalary || '' }).monthlyBudget; }) }
     ];
     target.innerHTML = lineSvg(series, ['#c9f56a', '#ff9c63'], ['Take-home', 'Budget']);
+    var firstTakeHome = series[0].values[0];
+    var lastTakeHome = series[0].values[series[0].values.length - 1];
+    var firstBudget = series[1].values[0];
+    var lastBudget = series[1].values[series[1].values.length - 1];
+    var payChange = Math.round((lastTakeHome / firstTakeHome - 1) * 100);
+    var budgetChange = Math.round((lastBudget / firstBudget - 1) * 100);
+    var insight = budgetChange > payChange
+      ? 'Modeled costs grew ' + budgetChange + '% while take-home pay grew ' + payChange + '%—the plan tightened faster than the paycheck.'
+      : 'Take-home pay grew ' + payChange + '% while modeled costs grew ' + budgetChange + '%—this scenario gained some room over time.';
+    var insightSelector = target.id === 'dashboard-trend' ? '#dashboard-trend-insight' : '#home-trend-insight';
+    setText(insightSelector, insight + ' This is a modeled trend, not a record of one person\'s spending.');
   }
 
   function renderTable(result, comparison) {
@@ -492,6 +540,13 @@
       $('#year-select').value = $('#map-year-scrubber').value;
       renderDashboard();
     });
+    $all('[data-rank-direction]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        currentRankDirection = button.getAttribute('data-rank-direction');
+        $all('[data-rank-direction]').forEach(function (item) { item.classList.toggle('active', item === button); });
+        renderDashboard();
+      });
+    });
     $('#map-compare-button').addEventListener('click', function () {
       if (mapFocusedStateCode) {
         $('#compare-state-select').value = mapFocusedStateCode;
@@ -515,6 +570,8 @@
       $('#mode-select').value = 'balanced';
       $('#custom-salary').value = '';
       $('#rank-measure').value = 'ratio';
+      currentRankDirection = 'top';
+      $all('[data-rank-direction]').forEach(function (item) { item.classList.toggle('active', item.getAttribute('data-rank-direction') === 'top'); });
       renderDashboard();
     });
     $('#download-scenario').addEventListener('click', csvDownload);
@@ -554,11 +611,21 @@
     $('#home-flow').innerHTML = flow.map(function (item) {
       return '<div class="flow-segment ' + item.className + '" style="width:' + (item.value / result.monthlyBudget * 100) + '%" title="' + item.key + ': ' + money(item.value) + '"></div>';
     }).join('');
-    var trend = [
-      { values: DATA.years.map(function (year) { return calculate({ careerId: 'nurse', stateCode: 'TX', year: year, householdId: 'solo', percentileKey: 'median', modeId: 'balanced' }).takeHome; }) },
-      { values: DATA.years.map(function (year) { return calculate({ careerId: 'nurse', stateCode: 'TX', year: year, householdId: 'solo', percentileKey: 'median', modeId: 'balanced' }).monthlyBudget; }) }
-    ];
-    $('#home-trend').innerHTML = lineSvg(trend, ['#c9f56a', '#ff9c63'], ['Salary', 'Budget']);
+    renderTrend(result, $('#home-trend'));
+  }
+
+  function renderHomeHero(scenario) {
+    setText('#home-hero-role', scenario.career.name);
+    setText('#home-hero-location', scenario.state.name + ' · ' + scenario.household.name);
+    $('#home-hero-take-home').innerHTML = money(scenario.takeHome) + '<span>/mo</span>';
+    setText('#home-hero-take-home-row', money(scenario.takeHome));
+    setText('#home-hero-budget', '−' + money(scenario.monthlyBudget));
+    setText('#home-hero-leftover', signedMoney(scenario.leftover));
+    setText('#home-hero-ratio', ratio(scenario.ratio));
+    setText('#home-hero-housing', percent(scenario.housingShare));
+    setText('#home-hero-chip', scenario.state.code + ' · ' + signedMoney(scenario.leftover));
+    var flow = $('#home-hero-flow');
+    if (flow) flow.style.width = clamp(scenario.monthlyBudget / scenario.takeHome * 100, 0, 100) + '%';
   }
 
   function renderHomePassport() {
@@ -567,6 +634,7 @@
     var stateB = $('#home-state-b').value;
     var scenarioA = calculate({ careerId: careerId, stateCode: stateA, year: 2024, householdId: 'solo', percentileKey: 'median', modeId: 'balanced' });
     var scenarioB = calculate({ careerId: careerId, stateCode: stateB, year: 2024, householdId: 'solo', percentileKey: 'median', modeId: 'balanced' });
+    renderHomeHero(scenarioA);
     setText('#home-passport-a', '');
     setText('#home-passport-b', '');
     $('#home-passport-a').innerHTML = '<small>' + scenarioA.state.name + '</small><strong>' + signedMoney(scenarioA.leftover) + ' / mo</strong>';
