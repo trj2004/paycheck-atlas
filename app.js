@@ -66,6 +66,15 @@
     return 1 + ((2024 - Number(year)) * 0.028);
   }
 
+  function cpiFactor(year, category) {
+    var current = findBy(DATA.cpi || [], 'year', 2024);
+    var point = findBy(DATA.cpi || [], 'year', Number(year));
+    if (!current || !point || !current.all) return costYearFactor(year);
+    var currentValue = current[category] || current.all;
+    var pointValue = point[category] || point.all;
+    return pointValue / currentValue;
+  }
+
   function wageYearFactor(year) {
     return 1 - ((2024 - Number(year)) * 0.022);
   }
@@ -76,21 +85,23 @@
     var household = findBy(DATA.households, 'id', options.householdId || 'solo');
     var mode = findBy(DATA.modes, 'id', options.modeId || 'balanced');
     var percentile = DATA.percentiles[options.percentileKey || 'median'];
+    var housingProfile = findBy(DATA.housing || [], 'id', options.housingId || 'one-bedroom');
     var year = Number(options.year || 2024);
     var priceFactor = state.rpp / 100;
-    var yearCosts = costYearFactor(year);
+    var yearCosts = cpiFactor(year, 'all');
     var salary = Number(options.customSalary) > 0
       ? Number(options.customSalary)
       : career.base * state.wage * percentile.multiplier * wageYearFactor(year);
 
-    var housing = state.rent * household.home * yearCosts;
-    var food = 460 * household.food * priceFactor * yearCosts;
-    var transport = state.transport * household.transport * yearCosts;
-    var health = 315 * household.health * priceFactor * yearCosts;
-    var childcare = household.childcare ? 1200 * (household.children === 2 ? 1.45 : 1) * priceFactor * yearCosts : 0;
-    var utilities = 190 * (household.home * 0.78 + 0.22) * priceFactor * yearCosts;
-    var other = 245 * (1 + household.children * 0.3) * priceFactor * yearCosts;
-    var discretionary = mode.discretionary * priceFactor * yearCosts;
+    var selectedHousing = options.housingId ? housingProfile : null;
+    var housing = state.rent * (selectedHousing ? selectedHousing.rentFactor : household.home) * cpiFactor(year, 'housing');
+    var food = 460 * household.food * priceFactor * cpiFactor(year, 'food');
+    var transport = state.transport * household.transport * cpiFactor(year, 'transport');
+    var health = 315 * household.health * priceFactor * cpiFactor(year, 'health');
+    var childcare = household.childcare ? 1200 * (household.children === 2 ? 1.45 : 1) * priceFactor * cpiFactor(year, 'other') : 0;
+    var utilities = 190 * (selectedHousing ? selectedHousing.rentFactor * 0.78 + 0.22 : household.home * 0.78 + 0.22) * priceFactor * cpiFactor(year, 'utilities');
+    var other = 245 * (1 + household.children * 0.3) * priceFactor * cpiFactor(year, 'other');
+    var discretionary = mode.discretionary * priceFactor * cpiFactor(year, 'other');
     var savings = mode.savings;
     var essentials = housing + food + transport + health + childcare + utilities + other;
     var monthlyBudget = essentials + discretionary + savings;
@@ -113,6 +124,8 @@
       career: career,
       household: household,
       mode: mode,
+      housingProfile: selectedHousing || { id: 'household-default', label: household.name + ' home assumption', bedrooms: null, sqft: null, rentFactor: household.home },
+      housingId: selectedHousing ? selectedHousing.id : '',
       percentile: percentile,
       percentileKey: options.percentileKey || 'median',
       year: year,
@@ -126,8 +139,10 @@
       requiredGross: requiredGross,
       salaryGap: salary - requiredGross,
       housingShare: housing / essentials,
+      housingCost: housing,
       priceAdjustedSalary: salary / priceFactor,
       priceFactor: priceFactor,
+      cpiIndex: (findBy(DATA.cpi || [], 'year', year) || {}).all || 100,
       rows: rows
     };
   }
@@ -140,6 +155,7 @@
       householdId: $('#household-select').value,
       percentileKey: $('#percentile-select').value,
       modeId: $('#mode-select').value,
+      housingId: $('#housing-select').value,
       customSalary: $('#custom-salary').value
     };
   }
@@ -160,6 +176,7 @@
     if (measure === 'leftover') return item.leftover;
     if (measure === 'required') return item.requiredGross;
     if (measure === 'price') return item.state.rpp;
+    if (measure === 'housing') return item.housingCost / item.takeHome;
     return item.ratio;
   }
 
@@ -167,6 +184,7 @@
     if (measure === 'leftover') return signedMoney(item.leftover);
     if (measure === 'required') return compactMoney(item.requiredGross);
     if (measure === 'price') return item.state.rpp.toFixed(1);
+    if (measure === 'housing') return percent(item.housingCost / item.takeHome);
     return ratio(item.ratio);
   }
 
@@ -222,6 +240,7 @@
         householdId: result.household.id,
         percentileKey: result.percentileKey,
         modeId: result.mode.id,
+        housingId: result.housingId,
         customSalary: result.customSalary || ''
       });
     });
@@ -300,6 +319,8 @@
     setText('#map-selected-state', focused.state.name);
     setText('#map-selected-copy', focused.state.name + ' gives this ' + result.career.name + ' scenario ' + mapValueLabel(focused, measure) + ' on the selected map lens.');
     $('#map-selected-detail').innerHTML = [
+      ['Home benchmark', focused.housingProfile.label, ''],
+      ['Rent / month', money(focused.housingCost), ''],
       ['Take-home / month', money(focused.takeHome), ''],
       ['Modeled budget', money(focused.monthlyBudget), ''],
       ['Leftover / month', signedMoney(focused.leftover), focused.leftover >= 0 ? 'good' : 'tight'],
@@ -380,6 +401,7 @@
         householdId: result.household.id,
         percentileKey: result.percentileKey,
         modeId: result.mode.id,
+        housingId: result.housingId,
         customSalary: result.customSalary || ''
       });
       item.rankValue = measure === 'ratio' ? item.ratio : measure === 'leftover' ? item.leftover : measure === 'salary' ? item.salary : item.state.rpp;
@@ -434,8 +456,8 @@
 
   function renderTrend(result, target) {
     var series = [
-      { values: DATA.years.map(function (year) { return calculate({ careerId: result.career.id, stateCode: result.state.code, year: year, householdId: result.household.id, percentileKey: result.percentileKey, modeId: result.mode.id, customSalary: result.customSalary || '' }).takeHome; }) },
-      { values: DATA.years.map(function (year) { return calculate({ careerId: result.career.id, stateCode: result.state.code, year: year, householdId: result.household.id, percentileKey: result.percentileKey, modeId: result.mode.id, customSalary: result.customSalary || '' }).monthlyBudget; }) }
+      { values: DATA.years.map(function (year) { return calculate({ careerId: result.career.id, stateCode: result.state.code, year: year, householdId: result.household.id, percentileKey: result.percentileKey, modeId: result.mode.id, housingId: result.housingId, customSalary: result.customSalary || '' }).takeHome; }) },
+      { values: DATA.years.map(function (year) { return calculate({ careerId: result.career.id, stateCode: result.state.code, year: year, householdId: result.household.id, percentileKey: result.percentileKey, modeId: result.mode.id, housingId: result.housingId, customSalary: result.customSalary || '' }).monthlyBudget; }) }
     ];
     target.innerHTML = lineSvg(series, ['#c9f56a', '#ff9c63'], ['Take-home', 'Budget']);
     var firstTakeHome = series[0].values[0];
@@ -451,16 +473,78 @@
     setText(insightSelector, insight + ' This is a modeled trend, not a record of one person\'s spending.');
   }
 
+  function renderCpiLens(result, target) {
+    if (!target) return;
+    var takeHomes = DATA.years.map(function (year) {
+      return calculate({ careerId: result.career.id, stateCode: result.state.code, year: year, householdId: result.household.id, percentileKey: result.percentileKey, modeId: result.mode.id, housingId: result.housingId, customSalary: result.customSalary || '' }).takeHome;
+    });
+    var budgets = DATA.years.map(function (year) {
+      return calculate({ careerId: result.career.id, stateCode: result.state.code, year: year, householdId: result.household.id, percentileKey: result.percentileKey, modeId: result.mode.id, housingId: result.housingId, customSalary: result.customSalary || '' }).monthlyBudget;
+    });
+    var paycheckIndex = takeHomes.map(function (value) { return value / takeHomes[0] * 100; });
+    var budgetIndex = budgets.map(function (value) { return value / budgets[0] * 100; });
+    target.innerHTML = lineSvg([
+      { values: paycheckIndex },
+      { values: budgetIndex }
+    ], ['#c9f56a', '#ff9c63'], ['Paycheck index', 'Basic-life cost index']);
+    var payChange = Math.round(paycheckIndex[paycheckIndex.length - 1] - 100);
+    var budgetChange = Math.round(budgetIndex[budgetIndex.length - 1] - 100);
+    var insight = budgetChange > payChange
+      ? 'The basic-life plan rose ' + budgetChange + '% while the paycheck rose ' + payChange + '%—purchasing power tightened.'
+      : 'The paycheck rose ' + payChange + '% while the basic-life plan rose ' + budgetChange + '%—purchasing power improved.';
+    var insightSelector = target.id === 'dashboard-trend' ? '#dashboard-trend-insight' : '#home-trend-insight';
+    setText(insightSelector, insight + ' Both lines are indexed to 2018 = 100 using prototype CPI-style inputs.');
+  }
+
+  function housingCardMarkup(item, label, className, compact) {
+    var rentShare = item.housingCost / item.takeHome;
+    var tag = label || 'scenario';
+    return '<article class="' + (compact ? 'home-housing-card ' : 'housing-card ') + (className || '') + '"><span>' + tag + '</span><h3>' + item.state.name + '</h3><strong class="' + (compact ? 'home-housing-rent' : 'housing-rent') + '">' + money(item.housingCost) + '<small> / month rent</small></strong><div class="' + (compact ? 'home-housing-details' : 'housing-details') + '"><div><span>Rent share</span><strong class="' + (rentShare <= .3 ? 'good' : 'tight') + '">' + percent(rentShare) + '</strong></div><div><span>After full plan</span><strong class="' + (item.leftover >= 0 ? 'good' : 'tight') + '">' + signedMoney(item.leftover) + '</strong></div></div></article>';
+  }
+
+  function renderHousingLens(result, comparison) {
+    var scenarios = DATA.states.map(function (state) {
+      return calculate({ careerId: result.career.id, stateCode: state.code, year: result.year, householdId: result.household.id, percentileKey: result.percentileKey, modeId: result.mode.id, housingId: result.housingId, customSalary: result.customSalary || '' });
+    });
+    var byRent = scenarios.slice().sort(function (a, b) { return a.housingCost - b.housingCost; });
+    var lowest = byRent[0];
+    var highest = byRent[byRent.length - 1];
+    var selected = [
+      { item: result, label: 'main state', className: 'main' },
+      { item: comparison, label: 'side-by-side', className: 'compare' },
+      { item: lowest, label: 'lowest modeled rent', className: '' },
+      { item: highest, label: 'highest modeled rent', className: '' }
+    ];
+    var seen = {};
+    selected = selected.filter(function (entry) {
+      if (seen[entry.item.state.code]) return false;
+      seen[entry.item.state.code] = true;
+      return true;
+    });
+    setText('#housing-benchmark-copy', 'Same ' + result.housingProfile.label + ' · same career, household, and salary lens · different coordinates.');
+    $('#housing-cards').innerHTML = selected.map(function (entry) { return housingCardMarkup(entry.item, entry.label, entry.className, false); }).join('');
+    var rentGap = highest.housingCost - lowest.housingCost;
+    $('#housing-insight').innerHTML = '<strong>' + highest.state.name + '</strong> asks ' + money(rentGap) + ' more per month than ' + lowest.state.name + ' for the same housing benchmark. The map and cards show how that rent difference travels through the full paycheck plan.';
+  }
+
+  function renderHomeHousing(scenarioA, scenarioB) {
+    setText('#home-housing-label', scenarioA.housingProfile.label);
+    $('#home-housing-cards').innerHTML = housingCardMarkup(scenarioA, 'from', 'main', true) + housingCardMarkup(scenarioB, 'to', 'compare', true);
+    var rentDifference = scenarioA.housingCost - scenarioB.housingCost;
+    var winner = rentDifference <= 0 ? scenarioA : scenarioB;
+    $('#home-housing-insight').innerHTML = '<strong>' + winner.state.name + '</strong> gives this ' + scenarioA.housingProfile.label.toLowerCase() + ' a lower modeled rent. The difference is ' + money(Math.abs(rentDifference)) + ' per month before food, transportation, taxes, and the rest of the life plan are added.';
+  }
+
   function renderTable(result, comparison) {
     var scenarios = [result, comparison];
     var ranked = DATA.states.map(function (state) {
-      return calculate({ careerId: result.career.id, stateCode: state.code, year: result.year, householdId: result.household.id, percentileKey: result.percentileKey, modeId: result.mode.id, customSalary: result.customSalary || '' });
+      return calculate({ careerId: result.career.id, stateCode: state.code, year: result.year, householdId: result.household.id, percentileKey: result.percentileKey, modeId: result.mode.id, housingId: result.housingId, customSalary: result.customSalary || '' });
     }).sort(function (a, b) { return b.ratio - a.ratio; });
     ranked.slice(0, 3).forEach(function (item) {
       if (!scenarios.some(function (existing) { return existing.state.code === item.state.code; })) scenarios.push(item);
     });
     $('#scenario-table tbody').innerHTML = scenarios.map(function (item) {
-      return '<tr><td><strong>' + item.state.name + '</strong></td><td>' + compactMoney(item.salary) + '</td><td>' + money(item.takeHome) + '</td><td>' + money(item.essentials) + '</td><td class="' + (item.leftover >= 0 ? 'positive' : 'negative') + '">' + signedMoney(item.leftover) + '</td><td>' + ratio(item.ratio) + '</td><td>' + percent(item.housingShare) + '</td></tr>';
+      return '<tr><td><strong>' + item.state.name + '</strong></td><td>' + item.housingProfile.label + '</td><td>' + money(item.housingCost) + '</td><td>' + compactMoney(item.salary) + '</td><td>' + money(item.takeHome) + '</td><td>' + money(item.essentials) + '</td><td class="' + (item.leftover >= 0 ? 'positive' : 'negative') + '">' + signedMoney(item.leftover) + '</td><td>' + ratio(item.ratio) + '</td><td>' + percent(item.housingShare) + '</td></tr>';
     }).join('');
     latestRows = scenarios;
   }
@@ -475,6 +559,7 @@
       householdId: options.householdId,
       percentileKey: options.percentileKey,
       modeId: options.modeId,
+      housingId: options.housingId,
       customSalary: options.customSalary
     });
     setText('#active-model-label', result.mode.name);
@@ -491,18 +576,19 @@
     if ($('#map-year-scrubber')) $('#map-year-scrubber').value = result.year;
     setText('#map-year-label', String(result.year));
     renderMap(result);
+    renderHousingLens(result, comparison);
     renderComparison(result, comparison);
     renderWaterfall(result);
     renderDrivers(result);
     renderRanked(result);
-    renderTrend(result, $('#dashboard-trend'));
+    renderCpiLens(result, $('#dashboard-trend'));
     renderTable(result, comparison);
   }
 
   function csvDownload() {
-    var header = ['Location', 'Salary', 'Take-home / month', 'Essentials / month', 'Leftover / month', 'Ratio', 'Housing share'];
+    var header = ['Location', 'Home', 'Rent / month', 'Salary', 'Take-home / month', 'Essentials / month', 'Leftover / month', 'Ratio', 'Housing share'];
     var lines = [header.join(',')].concat(latestRows.map(function (item) {
-      return [item.state.name, Math.round(item.salary), Math.round(item.takeHome), Math.round(item.essentials), Math.round(item.leftover), item.ratio.toFixed(2), percent(item.housingShare)].join(',');
+      return [item.state.name, item.housingProfile.label, Math.round(item.housingCost), Math.round(item.salary), Math.round(item.takeHome), Math.round(item.essentials), Math.round(item.leftover), item.ratio.toFixed(2), percent(item.housingShare)].join(',');
     }));
     var blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
     var url = URL.createObjectURL(blob);
@@ -519,6 +605,7 @@
     selectOptions($('#compare-state-select'), DATA.states, 'code', function (item) { return item.name; });
     selectOptions($('#year-select'), DATA.years.slice().reverse().map(function (year) { return { value: year }; }), 'value', function (item) { return String(item.value); });
     selectOptions($('#household-select'), DATA.households, 'id', function (item) { return item.name; });
+    selectOptions($('#housing-select'), DATA.housing, 'id', function (item) { return item.label; });
     selectOptions($('#percentile-select'), Object.keys(DATA.percentiles).map(function (key) { return { id: key, label: DATA.percentiles[key].label }; }), 'id', function (item) { return item.label; });
     selectOptions($('#mode-select'), DATA.modes, 'id', function (item) { return item.name; });
     $('#career-select').value = 'nurse';
@@ -526,9 +613,10 @@
     $('#compare-state-select').value = 'CA';
     $('#year-select').value = '2024';
     $('#household-select').value = 'solo';
+    $('#housing-select').value = 'one-bedroom';
     $('#percentile-select').value = 'median';
     $('#mode-select').value = 'balanced';
-    $all('#career-select, #state-select, #compare-state-select, #year-select, #household-select, #percentile-select, #mode-select, #custom-salary, #rank-measure').forEach(function (element) {
+    $all('#career-select, #state-select, #compare-state-select, #year-select, #household-select, #housing-select, #percentile-select, #mode-select, #custom-salary, #rank-measure').forEach(function (element) {
       element.addEventListener('input', renderDashboard);
       element.addEventListener('change', renderDashboard);
     });
@@ -566,6 +654,7 @@
       $('#compare-state-select').value = 'CA';
       $('#year-select').value = '2024';
       $('#household-select').value = 'solo';
+      $('#housing-select').value = 'one-bedroom';
       $('#percentile-select').value = 'median';
       $('#mode-select').value = 'balanced';
       $('#custom-salary').value = '';
@@ -592,6 +681,8 @@
     var best = values.slice().sort(function (a, b) { return b.ratio - a.ratio; })[0];
     var worst = values.slice().sort(function (a, b) { return a.ratio - b.ratio; })[0];
     var spread = best.leftover - worst.leftover;
+    setText('#home-spread-value', money(spread));
+    setText('#home-spread-label', best.state.name + ' leaves ' + money(spread) + ' more each month than ' + worst.state.name + ' under the same registered nurse, solo renter scenario.');
     $('#home-metrics').innerHTML = [
       ['Best modeled ratio', ratio(best.ratio), best.state.name + ' · registered nurse'],
       ['Breathing-room spread', money(spread), 'best vs. tightest state'],
@@ -611,7 +702,7 @@
     $('#home-flow').innerHTML = flow.map(function (item) {
       return '<div class="flow-segment ' + item.className + '" style="width:' + (item.value / result.monthlyBudget * 100) + '%" title="' + item.key + ': ' + money(item.value) + '"></div>';
     }).join('');
-    renderTrend(result, $('#home-trend'));
+    renderCpiLens(result, $('#home-trend'));
   }
 
   function renderHomeHero(scenario) {
@@ -632,9 +723,11 @@
     var careerId = $('#home-career-select').value;
     var stateA = $('#home-state-a').value;
     var stateB = $('#home-state-b').value;
-    var scenarioA = calculate({ careerId: careerId, stateCode: stateA, year: 2024, householdId: 'solo', percentileKey: 'median', modeId: 'balanced' });
-    var scenarioB = calculate({ careerId: careerId, stateCode: stateB, year: 2024, householdId: 'solo', percentileKey: 'median', modeId: 'balanced' });
+    var housingId = $('#home-housing-select').value;
+    var scenarioA = calculate({ careerId: careerId, stateCode: stateA, year: 2024, householdId: 'solo', percentileKey: 'median', modeId: 'balanced', housingId: housingId });
+    var scenarioB = calculate({ careerId: careerId, stateCode: stateB, year: 2024, householdId: 'solo', percentileKey: 'median', modeId: 'balanced', housingId: housingId });
     renderHomeHero(scenarioA);
+    renderHomeHousing(scenarioA, scenarioB);
     setText('#home-passport-a', '');
     setText('#home-passport-b', '');
     $('#home-passport-a').innerHTML = '<small>' + scenarioA.state.name + '</small><strong>' + signedMoney(scenarioA.leftover) + ' / mo</strong>';
@@ -647,10 +740,12 @@
     selectOptions($('#home-career-select'), DATA.careers, 'id', function (item) { return item.name; });
     selectOptions($('#home-state-a'), DATA.states, 'code', function (item) { return item.name; });
     selectOptions($('#home-state-b'), DATA.states, 'code', function (item) { return item.name; });
+    selectOptions($('#home-housing-select'), DATA.housing, 'id', function (item) { return item.label; });
     $('#home-career-select').value = 'nurse';
     $('#home-state-a').value = 'TX';
     $('#home-state-b').value = 'CA';
-    $all('#home-career-select, #home-state-a, #home-state-b').forEach(function (element) {
+    $('#home-housing-select').value = 'one-bedroom';
+    $all('#home-career-select, #home-state-a, #home-state-b, #home-housing-select').forEach(function (element) {
       element.addEventListener('change', renderHomePassport);
     });
     renderHomePassport();

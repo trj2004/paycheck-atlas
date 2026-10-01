@@ -144,7 +144,7 @@ button, select { cursor: pointer; }
 .passport-lab-head { position: relative; z-index: 1; display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
 .passport-lab h3 { margin: 5px 0 0; font-size: 20px; letter-spacing: -.05em; }
 .passport-stamp { padding: 7px 9px; border: 1px solid rgba(201, 245, 106, .4); border-radius: 4px; color: var(--lime); font-family: ui-monospace, monospace; font-size: 9px; letter-spacing: .1em; transform: rotate(5deg); }
-.passport-controls { position: relative; z-index: 1; display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 8px; margin-top: 25px; }
+.passport-controls { position: relative; z-index: 1; display: grid; grid-template-columns: 1.15fr 1fr 1fr 1.25fr; gap: 8px; margin-top: 25px; }
 .passport-controls label > span { display: block; margin-bottom: 6px; color: var(--muted); font-size: 9px; }
 .passport-controls select { width: 100%; min-height: 37px; padding: 0 9px; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); background: rgba(5, 10, 14, .55); font-size: 10px; }
 .passport-route { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 17px; margin-top: 32px; }
@@ -161,6 +161,24 @@ button, select { cursor: pointer; }
 .passport-result strong { color: var(--ink); font-size: 13px; }
 .passport-result .passport-delta { color: var(--orange); font-family: ui-monospace, monospace; font-size: 12px; }
 .passport-lab .card-link { position: relative; z-index: 1; margin-top: 21px; }
+
+.home-housing-section { padding: 76px 0 28px; }
+.home-housing-board { overflow: hidden; padding: 25px; border: 1px solid rgba(255, 156, 99, .28); border-radius: var(--radius); background: radial-gradient(circle at 93% 12%, rgba(255, 156, 99, .11), transparent 18rem), linear-gradient(135deg, #191c24, #10161e 75%); }
+.home-housing-top { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.home-housing-top strong { color: var(--orange); font-size: 13px; }
+.home-housing-cards, .housing-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px; }
+.home-housing-card, .housing-card { padding: 17px; border: 1px solid var(--line); border-radius: 12px; background: rgba(7, 12, 17, .5); }
+.home-housing-card.main, .housing-card.main { border-color: rgba(201, 245, 106, .4); }
+.home-housing-card.compare, .housing-card.compare { border-color: rgba(255, 156, 99, .45); }
+.home-housing-card > span, .housing-card > span { color: var(--subtle); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; }
+.home-housing-card h3, .housing-card h3 { margin: 9px 0 0; font-size: 16px; letter-spacing: -.04em; }
+.home-housing-rent, .housing-rent { display: block; margin-top: 15px; color: var(--orange); font-size: 25px; font-weight: 800; letter-spacing: -.06em; }
+.home-housing-rent small, .housing-rent small { color: var(--muted); font-size: 10px; font-weight: 500; letter-spacing: 0; }
+.home-housing-details, .housing-details { display: grid; gap: 7px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.home-housing-details div, .housing-details div { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 10px; }
+.home-housing-details strong, .housing-details strong { color: var(--ink); }
+.home-housing-insight, .housing-insight { margin-top: 17px; padding: 13px 15px; border-left: 2px solid var(--orange); color: var(--muted); background: rgba(255, 156, 99, .06); font-size: 11px; line-height: 1.6; }
+.home-housing-insight strong, .housing-insight strong { color: var(--orange); }
 
 .equation-section { padding: 78px 0 30px; }
 .equation-heading { margin-bottom: 29px; }
@@ -334,6 +352,13 @@ button, select { cursor: pointer; }
 .map-story-row strong.good { color: var(--lime); }
 .map-story-row strong.tight { color: var(--orange); }
 .map-compare-button { width: 100%; margin-top: 25px; }
+.housing-stage { margin-top: 14px; }
+.housing-panel { background: radial-gradient(circle at 92% 0%, rgba(255, 156, 99, .08), transparent 24rem), var(--panel); }
+.housing-card { min-height: 184px; }
+.housing-card h3 { font-size: 18px; }
+.housing-card .housing-rent { color: var(--orange); }
+.housing-card .housing-details strong.good { color: var(--lime); }
+.housing-card .housing-details strong.tight { color: var(--orange); }
 .dashboard-grid { display: grid; grid-template-columns: 1.22fr .78fr; gap: 14px; margin-top: 14px; }
 .dash-panel { min-width: 0; padding: 25px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
 .dash-panel .panel-top h2 { font-size: 19px; }
@@ -406,6 +431,7 @@ button, select { cursor: pointer; }
 .rank-bar { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--lime), var(--mint)); }
 .rank-value { color: var(--lime); font-family: ui-monospace, monospace; font-size: 10px; text-align: right; }
 .mini-trend { height: 210px; margin-top: 25px; }
+.trend-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 6px; color: var(--muted); font-size: 10px; }
 .trend-insight { min-height: 34px; margin: 12px 0 0; color: var(--muted); font-size: 10px; line-height: 1.55; }
 .trend-foot { margin-top: 10px; }
 .table-panel { margin-top: 14px; }
@@ -439,6 +465,7 @@ dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
   .hero { gap: 35px; }
   .hero h1 { font-size: clamp(48px, 8vw, 70px); }
   .passport-section { grid-template-columns: 1fr; gap: 35px; }
+  .home-housing-cards, .housing-cards { grid-template-columns: repeat(2, 1fr); }
   .equation-line { grid-template-columns: 1fr 1fr; }
   .equation-arrow { display: none; }
   .reading-guide { grid-template-columns: 1fr; }
@@ -460,6 +487,9 @@ dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
   .hero-lede { font-size: 15px; }
   .hero-visual { min-height: 380px; margin-top: 25px; }
   .passport-section { padding-top: 68px; }
+  .passport-controls { display: block; }
+  .passport-controls label { display: block; margin-bottom: 11px; }
+  .home-housing-section { padding-top: 58px; }
   .equation-section { padding-top: 58px; }
   .orbit { width: 350px; height: 350px; }
   .orbit-two { width: 285px; height: 285px; }
@@ -474,6 +504,10 @@ dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
   .metric-card { min-height: 133px; padding: 15px; }
   .metric-card .metric-value { font-size: 24px; }
   .feature-card { padding: 20px; }
+  .home-housing-board { padding: 18px; }
+  .home-housing-top { display: block; }
+  .home-housing-top strong { display: block; margin-top: 9px; }
+  .home-housing-cards, .housing-cards { grid-template-columns: 1fr; }
   .equation-board { padding: 18px; }
   .equation-board-top, .equation-bottom { display: block; }
   .equation-note, .equation-bottom strong, .equation-mark { display: block; margin-top: 10px; }

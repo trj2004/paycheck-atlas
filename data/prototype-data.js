@@ -1,5 +1,20 @@
 window.PAYCHECK_ATLAS = {
   years: [2018, 2019, 2020, 2021, 2022, 2023, 2024],
+  cpi: [
+    { year: 2018, all: 100.0, housing: 100.0, food: 100.0, transport: 100.0, health: 100.0, utilities: 100.0, other: 100.0 },
+    { year: 2019, all: 101.8, housing: 102.4, food: 101.9, transport: 101.2, health: 102.4, utilities: 102.0, other: 101.6 },
+    { year: 2020, all: 103.2, housing: 104.2, food: 104.0, transport: 98.5, health: 103.8, utilities: 103.5, other: 102.8 },
+    { year: 2021, all: 106.8, housing: 106.0, food: 107.5, transport: 110.5, health: 105.5, utilities: 106.7, other: 106.2 },
+    { year: 2022, all: 115.2, housing: 111.5, food: 116.0, transport: 126.0, health: 110.8, utilities: 116.8, other: 114.2 },
+    { year: 2023, all: 119.4, housing: 116.3, food: 121.1, transport: 124.0, health: 114.2, utilities: 121.7, other: 118.6 },
+    { year: 2024, all: 122.5, housing: 119.8, food: 124.4, transport: 126.8, health: 117.5, utilities: 125.1, other: 121.8 }
+  ],
+  housing: [
+    { id: "studio", label: "Studio · 500 sq ft", bedrooms: 0, sqft: 500, rentFactor: 0.78 },
+    { id: "one-bedroom", label: "1 bedroom · 750 sq ft", bedrooms: 1, sqft: 750, rentFactor: 1.00 },
+    { id: "two-bedroom", label: "2 bedrooms · 1,000 sq ft", bedrooms: 2, sqft: 1000, rentFactor: 1.28 },
+    { id: "three-bedroom", label: "3 bedrooms · 1,400 sq ft", bedrooms: 3, sqft: 1400, rentFactor: 1.62 }
+  ],
   states: [
     { code: "CA", name: "California", rpp: 110.7, wage: 1.18, rent: 2250, transport: 455, tax: 0.255, mood: "high-cost" },
     { code: "HI", name: "Hawaii", rpp: 110.0, wage: 1.04, rent: 2200, transport: 510, tax: 0.235, mood: "high-cost" },

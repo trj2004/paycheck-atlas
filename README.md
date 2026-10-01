@@ -6,9 +6,11 @@ An interactive exploration of how location changes the purchasing power of a ful
 
 This is the first visual prototype. It uses clearly labeled illustrative scenario data so the report page and dashboard interactions can be tested before the public data pipeline is connected.
 
-The final dataset will use annual occupation wages, regional price levels, housing costs, and household expense assumptions. The intended research question is:
+The final dataset will use annual occupation wages, regional price levels, CPI categories, standardized housing benchmarks, and household expense assumptions. The intended research question is:
 
 > How does location affect the purchasing power of a full-time salary?
+
+The prototype now also demonstrates a second lens: whether a paycheck has kept up with the cost of a basic life over time, and what the same bedroom/square-footage housing benchmark costs in different states.
 
 ## Files
 
