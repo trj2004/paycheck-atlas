@@ -6,6 +6,7 @@
   var currentChartMeasure = 'expenses';
   var currentMapMeasure = 'ratio';
   var mapFocusedStateCode = null;
+  var mapZoom = 1;
   var latestRows = [];
 
   var MAP_LAYOUT = {
@@ -168,6 +169,24 @@
     return ratio(item.ratio);
   }
 
+  function applyMapZoom() {
+    var mapSvg = $('#atlas-map svg');
+    if (!mapSvg) return;
+    mapSvg.style.transformOrigin = '50% 50%';
+    mapSvg.style.transform = 'scale(' + mapZoom + ')';
+    var zoomValue = $('#map-zoom-value');
+    if (zoomValue) zoomValue.textContent = Math.round(mapZoom * 100) + '%';
+    var zoomOut = $('#map-zoom-out');
+    var zoomIn = $('#map-zoom-in');
+    if (zoomOut) zoomOut.disabled = mapZoom <= 0.85;
+    if (zoomIn) zoomIn.disabled = mapZoom >= 1.8;
+  }
+
+  function setMapZoom(value) {
+    mapZoom = clamp(value, 0.85, 1.8);
+    applyMapZoom();
+  }
+
   function renderMap(result) {
     var measure = $('#map-measure').value;
     currentMapMeasure = measure;
@@ -242,6 +261,7 @@
           label.style.pointerEvents = 'none';
         });
       });
+      applyMapZoom();
     }
     setText('#map-selected-state', focused.state.name);
     setText('#map-selected-copy', focused.state.name + ' gives this ' + result.career.name + ' scenario ' + mapValueLabel(focused, measure) + ' on the selected map lens.');
@@ -465,6 +485,9 @@
       element.addEventListener('change', renderDashboard);
     });
     $('#map-measure').addEventListener('change', renderDashboard);
+    $('#map-zoom-out').addEventListener('click', function () { setMapZoom(mapZoom - 0.15); });
+    $('#map-zoom-reset').addEventListener('click', function () { setMapZoom(1); });
+    $('#map-zoom-in').addEventListener('click', function () { setMapZoom(mapZoom + 0.15); });
     $('#map-year-scrubber').addEventListener('input', function () {
       $('#year-select').value = $('#map-year-scrubber').value;
       renderDashboard();
