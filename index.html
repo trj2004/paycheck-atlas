@@ -30,6 +30,7 @@
           <div class="salary-amount" id="home-hero-take-home">$5,672<span>/mo</span></div>
           <div class="mini-flow"><div class="mini-flow-row"><span>Take-home pay</span><b id="home-hero-take-home-row">$5,672</b></div><div class="mini-flow-row muted"><span>Modeled plan</span><b id="home-hero-budget">−$3,394</b></div><div class="flow-line"><i id="home-hero-flow" style="width: 67%"></i></div><div class="mini-flow-row leftover"><span>Breathing room</span><b id="home-hero-leftover">$2,278</b></div></div>
           <div class="score-row"><span>Affordability ratio</span><strong id="home-hero-ratio">1.67×</strong></div>
+          <p class="salary-card-finding" id="home-hero-finding">This scenario leaves room after the modeled plan, but the location still determines how much breathing room remains.</p>
         </div>
         <div class="floating-chip chip-left"><span>⌂</span><div><small>Housing share</small><b id="home-hero-housing">29%</b></div></div>
         <div class="floating-chip chip-right"><span>↗</span><div><small>Plan surplus</small><b id="home-hero-chip">TX · +$2.3k</b></div></div>
@@ -47,6 +48,7 @@
         <div class="passport-controls"><label><span>Career</span><select id="home-career-select"></select></label><label><span>From</span><select id="home-state-a"></select></label><label><span>To</span><select id="home-state-b"></select></label><label><span>Home benchmark</span><select id="home-housing-select"></select></label></div>
         <div class="passport-route"><div class="route-line"><i></i><b class="route-plane">✦</b></div><div class="passport-place" id="home-passport-a"></div><div class="passport-place passport-place-b" id="home-passport-b"></div></div>
         <div class="passport-result" id="home-passport-result"></div>
+        <p class="passport-explanation" id="home-passport-explanation">The comparison holds the career, household, home benchmark, and year constant so the difference is primarily the location lens.</p>
         <a class="card-link" href="dashboard.html">Open the full scenario builder <span>→</span></a>
       </article>
     </section>
@@ -56,21 +58,26 @@
       <div class="house-lab-grid">
         <article class="house-scene">
           <div class="house-scene-top"><div><span class="card-kicker">LIVE SCENARIO HOUSE</span><strong id="home-house-label">Registered Nurse · Texas</strong></div><span class="house-live-dot"><i></i> PAYCHECK ACTIVE</span></div>
-          <div class="house-blueprint" role="group" aria-label="Interactive house budget blueprint">
-            <div class="house-skyline"><span></span><span></span><span></span><span></span><span></span></div>
-            <div class="blueprint-roof"><i></i><b>HOME BASE</b></div>
-            <div class="house-body">
-              <button class="house-room room-housing active" type="button" data-house-category="housing"><span class="room-icon">⌂</span><span class="room-name">Housing</span><strong id="home-room-housing">$1,200</strong><small id="home-room-housing-share">—</small></button>
-              <button class="house-room room-food" type="button" data-house-category="food"><span class="room-icon">✦</span><span class="room-name">Food</span><strong id="home-room-food">$460</strong><small id="home-room-food-share">—</small></button>
-              <button class="house-room room-transport" type="button" data-house-category="transport"><span class="room-icon">↗</span><span class="room-name">Transport</span><strong id="home-room-transport">$445</strong><small id="home-room-transport-share">—</small></button>
-              <button class="house-room room-health" type="button" data-house-category="health"><span class="room-icon">+</span><span class="room-name">Health</span><strong id="home-room-health">$315</strong><small id="home-room-health-share">—</small></button>
-              <button class="house-room room-savings" type="button" data-house-category="savings"><span class="room-icon">◇</span><span class="room-name">Foundation</span><strong id="home-room-savings">$350</strong><small id="home-room-savings-share">—</small></button>
-            </div>
-            <div class="house-yard"><span class="house-token token-pay">PAY</span><span class="house-token token-plan">PLAN</span><span class="house-token token-room">ROOM LEFT</span></div>
+          <div class="career-arrival" id="home-career-arrival" aria-live="polite">
+            <div class="career-character" id="home-career-character" data-career-id="nurse"><div class="character-glow"></div><div class="character-head"><span id="home-career-icon">✚</span></div><div class="character-body"><i></i><b></b></div></div>
+            <div class="career-arrival-copy"><span>THE PAYCHECK STARTS HERE</span><strong id="home-career-role">Registered Nurse</strong><small id="home-career-family">Health &amp; care · median salary lens</small></div>
+            <div class="career-prop" id="home-career-prop">✚</div>
           </div>
-          <div class="house-money-track"><div><span>Take-home pay</span><strong id="home-house-take-home">$0 / mo</strong></div><div class="house-money-bar"><i id="home-house-budget-fill"></i></div><div class="house-money-labels"><span>Modeled plan <b id="home-house-budget">$0</b></span><span>Leftover <b id="home-house-leftover">$0</b></span></div></div>
+          <div class="budget-inflow"><span>TAKE-HOME PAY ENTERS THE HOME</span><strong id="home-house-take-home">$0 / mo</strong><i></i><b>$</b></div>
+          <div class="budget-house" role="group" aria-label="Interactive home budget cross-section">
+            <div class="budget-roof"><span>ONE LIFE · ONE MONTH</span><b>Where the paycheck goes</b></div>
+            <div class="budget-facade">
+              <button class="house-room budget-room room-housing active" type="button" data-house-category="housing"><span class="room-icon">⌂</span><span class="room-name">Housing</span><strong id="home-room-housing">$1,200</strong><small id="home-room-housing-share">—</small><i></i></button>
+              <button class="house-room budget-room room-food" type="button" data-house-category="food"><span class="room-icon">✦</span><span class="room-name">Food</span><strong id="home-room-food">$460</strong><small id="home-room-food-share">—</small><i></i></button>
+              <button class="house-room budget-room room-transport" type="button" data-house-category="transport"><span class="room-icon">↗</span><span class="room-name">Transport</span><strong id="home-room-transport">$445</strong><small id="home-room-transport-share">—</small><i></i></button>
+              <button class="house-room budget-room room-health" type="button" data-house-category="health"><span class="room-icon">+</span><span class="room-name">Health care</span><strong id="home-room-health">$315</strong><small id="home-room-health-share">—</small><i></i></button>
+            </div>
+            <button class="house-room budget-foundation room-savings" type="button" data-house-category="savings"><span><span class="room-icon">◇</span><span class="room-name">Financial foundation · savings target</span></span><strong id="home-room-savings">$350</strong><small id="home-room-savings-share">—</small><i></i></button>
+            <div class="budget-porch"><div class="budget-door"><span>ROOM LEFT</span><strong id="home-house-leftover">$0</strong></div><p id="home-house-budget-caption">The leftover amount is the money remaining after the modeled housing, needs, personal spending, and savings plan.</p></div>
+          </div>
+          <div class="house-money-track"><div><span>Modeled plan consumes</span><strong id="home-house-budget">$0</strong></div><div class="house-money-bar"><i id="home-house-budget-fill"></i></div><div class="house-money-labels"><span>Plan share of take-home pay</span><span>Click a room to inspect the finding</span></div></div>
         </article>
-        <aside class="house-analysis" aria-live="polite"><span class="card-kicker">WHAT THIS SCENARIO SAYS</span><h3 id="home-house-analysis-title">Housing is the first pressure point.</h3><p id="home-house-analysis-copy">Click a room in the house to inspect how that cost enters the affordability calculation.</p><div class="house-analysis-stat"><span id="home-house-analysis-label">Largest modeled cost</span><strong id="home-house-analysis-value">Housing</strong><small id="home-house-analysis-note">The selected scenario updates this house in real time.</small></div><div class="house-reading-note"><span>HOW TO READ IT</span><p>The colored rooms are monthly costs. The bar below the house shows how much of take-home pay the modeled plan consumes; the remaining space is the money left after the plan.</p></div></aside>
+        <aside class="house-analysis" aria-live="polite"><span class="card-kicker">WHAT THIS SCENARIO SAYS</span><h3 id="home-house-analysis-title">Housing is the first pressure point.</h3><p id="home-house-analysis-copy">Click a room in the house to inspect how that cost enters the affordability calculation.</p><div class="house-analysis-stat"><span id="home-house-analysis-label">Largest modeled cost</span><strong id="home-house-analysis-value">Housing</strong><small id="home-house-analysis-note">The selected scenario updates this house in real time.</small></div><div class="house-reading-note"><span>HOW TO READ IT</span><p id="home-house-reading-copy">Each room is a monthly cost category. The foundation protects savings, while the front door shows what remains after the selected lifestyle plan is paid for.</p></div></aside>
       </div>
     </section>
 
@@ -91,6 +98,7 @@
         </div>
         <div class="equation-bottom"><span>THE CORE IDEA</span><strong>Same work does not buy the same life everywhere.</strong><span class="equation-mark">$ − ◌ = ✦</span></div>
       </div>
+      <p class="equation-live-note" id="home-equation-live-note">The active scenario will show how the selected paycheck turns into a monthly plan and the money left afterward.</p>
       <div class="definition-grid"><div><span class="card-kicker">AFFORDABILITY RATIO</span><strong>Take-home pay ÷ monthly plan</strong><p>Above 1.00× means the modeled paycheck covers the plan. Below 1.00× means the plan has a monthly gap.</p></div><div><span class="card-kicker">LEFTOVER INCOME</span><strong>Take-home pay − full plan</strong><p>This is the dollar amount left after housing, needs, discretionary spending, and the selected savings target.</p></div><div><span class="card-kicker">PRICE LEVEL</span><strong>How expensive a place is</strong><p>A regional price level compares a state with the U.S. average. It describes prices—not whether a specific person can afford them.</p></div></div>
       <div class="reading-guide"><div><span class="card-kicker">WHAT CHANGES</span><strong>Location changes the cost of the plan.</strong><p>Rent, transportation, taxes, and regional price levels can turn the same salary into a very different monthly result.</p></div><div><span class="card-kicker">WHAT STAYS CONSTANT</span><strong>The scenario stays fair.</strong><p>When states are compared, the career, household, salary lens, year, and lifestyle model remain the same.</p></div><div><span class="card-kicker">WHAT YOU CAN TEST</span><strong>Build your own definition of “affordable.”</strong><p>Swap the career, household, salary, or budget model and see which assumption moves the answer.</p></div></div>
     </section>

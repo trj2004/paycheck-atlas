@@ -214,6 +214,9 @@ button, select { cursor: pointer; }
 .house-money-track > div:first-child strong { color: var(--ink); font-size: 12px; }
 .house-money-bar { height: 8px; margin: 11px 0 9px; overflow: hidden; border-radius: 99px; background: #29343d; }
 .house-money-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--orange), var(--lime)); transition: width .65s cubic-bezier(.2, .8, .2, 1); }
+.budget-foundation.active { border-color: var(--room-color); background: linear-gradient(90deg, color-mix(in srgb, var(--room-color) 20%, transparent), rgba(255, 255, 255, .025)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--room-color) 18%, transparent); }
+.passport-explanation { max-width: 650px; margin: 13px 0 0; color: var(--muted); font-size: 10px; line-height: 1.6; }
+.equation-live-note { margin: 14px 0 0; padding: 12px 14px; border-left: 2px solid var(--blue); color: var(--muted); background: rgba(116, 200, 255, .05); font-size: 11px; line-height: 1.6; }
 .house-money-labels { color: var(--subtle); font-size: 9px; }
 .house-money-labels b { margin-left: 4px; color: var(--ink); font-family: ui-monospace, monospace; }
 .house-money-labels span:last-child b { color: var(--lime); }
@@ -243,6 +246,71 @@ button, select { cursor: pointer; }
 #home-moving-house { position: absolute; top: -15px; left: 0; display: grid; width: 31px; height: 31px; place-items: center; border: 1px solid var(--lime); border-radius: 9px; color: #09100d; background: var(--lime); font-size: 17px; box-shadow: 0 0 20px rgba(201, 245, 106, .3); }
 #home-moving-house.is-moving { animation: travel-house .8s cubic-bezier(.2, .8, .2, 1) forwards; }
 .home-move-caption { margin: 2px 0 0; color: var(--subtle); font-size: 10px; text-align: center; }
+
+/* The scenario house is a clean cross-section: income enters from the career,
+   the rooms hold monthly costs, and the door shows what survives the plan. */
+.salary-card-finding { margin: 17px 0 0; padding-top: 13px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; line-height: 1.55; }
+.career-arrival { display: flex; align-items: center; gap: 16px; margin: 18px 25px 0; padding: 12px 14px; border: 1px solid rgba(120, 240, 190, .22); border-radius: 13px; background: linear-gradient(90deg, rgba(120, 240, 190, .07), rgba(201, 245, 106, .03)); }
+.career-character { --character-color: var(--mint); position: relative; display: grid; width: 66px; height: 66px; flex: 0 0 66px; place-items: center; border: 1px solid color-mix(in srgb, var(--character-color) 60%, transparent); border-radius: 18px; background: radial-gradient(circle at 50% 25%, color-mix(in srgb, var(--character-color) 27%, transparent), transparent 64%), #0b151a; overflow: hidden; }
+.career-character[data-career-id="nurse"] { --character-color: var(--mint); }
+.career-character[data-career-id="developer"] { --character-color: var(--blue); }
+.career-character[data-career-id="teacher"] { --character-color: var(--violet); }
+.career-character[data-career-id="analyst"] { --character-color: var(--lime); }
+.career-character[data-career-id="electrician"], .career-character[data-career-id="mechanic"] { --character-color: var(--orange); }
+.career-character[data-career-id="retail"] { --character-color: var(--coral); }
+.career-character[data-career-id="designer"] { --character-color: #f3c86b; }
+.character-glow { position: absolute; width: 29px; height: 29px; border-radius: 50%; background: var(--character-color); filter: blur(14px); opacity: .4; }
+.character-head { position: relative; z-index: 1; display: grid; width: 23px; height: 23px; place-items: center; border: 2px solid var(--character-color); border-radius: 50%; color: var(--character-color); background: #101c21; font-size: 9px; font-weight: 900; box-shadow: 0 0 14px color-mix(in srgb, var(--character-color) 45%, transparent); }
+.character-body { position: absolute; bottom: -9px; left: 16px; width: 34px; height: 32px; border: 2px solid var(--character-color); border-bottom: 0; border-radius: 18px 18px 0 0; background: color-mix(in srgb, var(--character-color) 14%, #101c21); }
+.character-body::before, .character-body::after { content: ""; position: absolute; top: 12px; width: 15px; height: 2px; background: var(--character-color); }
+.character-body::before { left: -10px; transform: rotate(30deg); }
+.character-body::after { right: -10px; transform: rotate(-30deg); }
+.career-arrival-copy { min-width: 0; }
+.career-arrival-copy span, .career-arrival-copy strong, .career-arrival-copy small { display: block; }
+.career-arrival-copy span { color: var(--character-color); font-family: ui-monospace, monospace; font-size: 8px; letter-spacing: .1em; }
+.career-arrival-copy strong { margin-top: 4px; overflow: hidden; color: var(--ink); font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
+.career-arrival-copy small { margin-top: 3px; color: var(--muted); font-size: 10px; }
+.career-prop { display: grid; width: 37px; height: 37px; flex: 0 0 37px; margin-left: auto; place-items: center; border: 1px solid rgba(201, 245, 106, .35); border-radius: 11px; color: var(--lime); background: rgba(201, 245, 106, .08); font-size: 14px; font-weight: 900; animation: prop-float 2.7s ease-in-out infinite; }
+.career-arrival.scenario-update { animation: arrival-in .55s ease both; }
+.budget-inflow { display: grid; grid-template-columns: auto auto 1fr 27px; align-items: center; gap: 12px; margin: 18px 25px 0; color: var(--muted); font-size: 8px; letter-spacing: .1em; }
+.budget-inflow strong { color: var(--ink); font-family: ui-monospace, monospace; font-size: 12px; letter-spacing: 0; }
+.budget-inflow i { position: relative; height: 1px; background: linear-gradient(90deg, var(--lime), transparent); }
+.budget-inflow i::after { content: ""; position: absolute; top: -3px; right: 10%; width: 7px; height: 7px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 12px var(--lime); animation: paycheck-travel 2.5s linear infinite; }
+.budget-inflow b { display: grid; width: 27px; height: 27px; place-items: center; border-radius: 50%; color: #09100d; background: var(--lime); font-size: 13px; }
+.budget-house { position: relative; min-height: 376px; margin: 12px 25px 0; padding: 49px 15px 0; border: 1px solid rgba(201, 245, 106, .25); border-radius: 15px 15px 9px 9px; background: linear-gradient(180deg, rgba(201, 245, 106, .04), rgba(8, 14, 18, .3)); }
+.budget-house::before { content: ""; position: absolute; top: 36px; right: 15px; left: 15px; border-top: 1px dashed rgba(201, 245, 106, .2); }
+.budget-roof { position: absolute; top: -34px; right: 11%; left: 11%; display: grid; min-height: 70px; place-content: center; border: 1px solid rgba(201, 245, 106, .58); border-bottom: 0; border-radius: 120px 120px 0 0; background: linear-gradient(135deg, rgba(201, 245, 106, .17), rgba(120, 240, 190, .05)); text-align: center; }
+.budget-roof span, .budget-roof b { display: block; }
+.budget-roof span { color: var(--lime); font-family: ui-monospace, monospace; font-size: 8px; letter-spacing: .16em; }
+.budget-roof b { margin-top: 4px; color: var(--ink); font-size: 12px; letter-spacing: -.02em; }
+.budget-facade { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; height: 209px; padding: 9px; border: 1px solid rgba(226, 236, 245, .15); border-radius: 10px; background: rgba(8, 14, 18, .74); box-shadow: 0 17px 40px rgba(0, 0, 0, .24); }
+.budget-room { --room-color: var(--lime); display: flex; min-width: 0; flex-direction: column; align-items: flex-start; justify-content: center; padding: 12px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--room-color) 32%, transparent); border-radius: 8px; color: var(--ink); background: linear-gradient(135deg, color-mix(in srgb, var(--room-color) 9%, transparent), rgba(255, 255, 255, .018)); text-align: left; transition: transform .2s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease; }
+.budget-room::after { content: none; }
+.budget-room:hover, .budget-room:focus-visible { z-index: 2; transform: translateY(-3px); border-color: var(--room-color); outline: none; box-shadow: 0 9px 18px rgba(0, 0, 0, .25); }
+.budget-room.active { border-color: var(--room-color); background: linear-gradient(135deg, color-mix(in srgb, var(--room-color) 17%, transparent), rgba(255, 255, 255, .025)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--room-color) 20%, transparent); }
+.budget-room i { display: block; width: 100%; height: 3px; margin-top: 9px; border-radius: 99px; background: var(--room-color); opacity: .7; transition: width .5s ease; }
+.budget-room .room-icon { color: var(--room-color); font-size: 17px; line-height: 1; }
+.budget-room .room-name { margin-top: 7px; color: var(--muted); font-size: 9px; }
+.budget-room strong { margin-top: 3px; color: var(--ink); font-size: 16px; letter-spacing: -.05em; }
+.budget-room small { margin-top: 2px; color: var(--subtle); font-size: 8px; }
+.budget-room.room-housing { --room-color: var(--orange); grid-column: auto; }
+.budget-room.room-food { --room-color: var(--lime); grid-column: auto; }
+.budget-room.room-transport { --room-color: var(--blue); grid-column: auto; }
+.budget-room.room-health { --room-color: var(--mint); grid-column: auto; }
+.budget-foundation { --room-color: var(--violet); display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 9px; width: 100%; margin-top: 9px; padding: 12px 13px; border: 1px solid color-mix(in srgb, var(--room-color) 34%, transparent); border-radius: 8px; color: var(--ink); background: linear-gradient(90deg, color-mix(in srgb, var(--room-color) 13%, transparent), rgba(255, 255, 255, .018)); text-align: left; }
+.budget-foundation > span { min-width: 0; }
+.budget-foundation .room-name { display: inline-block; margin-left: 7px; color: var(--muted); font-size: 9px; }
+.budget-foundation strong { color: var(--ink); font-size: 15px; }
+.budget-foundation small { grid-column: 1; color: var(--subtle); font-size: 8px; }
+.budget-foundation i { grid-column: 1 / -1; display: block; width: 100%; height: 3px; margin-top: -3px; border-radius: 99px; background: var(--room-color); }
+.budget-porch { display: grid; grid-template-columns: 100px 1fr; align-items: center; gap: 14px; margin: 10px 18px 0; padding-top: 10px; border-top: 1px solid rgba(120, 240, 190, .2); }
+.budget-door { display: grid; min-height: 53px; place-content: center; padding: 6px; border: 1px solid rgba(201, 245, 106, .45); border-bottom: 0; border-radius: 8px 8px 0 0; color: var(--lime); background: rgba(201, 245, 106, .08); text-align: center; }
+.budget-door span { font-family: ui-monospace, monospace; font-size: 7px; letter-spacing: .1em; }
+.budget-door strong { margin-top: 3px; font-size: 15px; letter-spacing: -.04em; }
+.budget-porch p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.45; }
+.house-money-track { padding: 16px 25px 22px; border-top: 1px solid var(--line); }
+.house-money-bar { height: 8px; margin: 11px 0 9px; overflow: hidden; border-radius: 99px; background: #29343d; }
+.house-money-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--orange), var(--lime)); transition: width .65s cubic-bezier(.2, .8, .2, 1); }
 
 .home-housing-section { padding: 76px 0 28px; }
 .home-housing-board { overflow: hidden; padding: 25px; border: 1px solid rgba(255, 156, 99, .28); border-radius: var(--radius); background: radial-gradient(circle at 93% 12%, rgba(255, 156, 99, .11), transparent 18rem), linear-gradient(135deg, #191c24, #10161e 75%); }
@@ -573,6 +641,19 @@ dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
   55% { opacity: 1; box-shadow: inset 0 0 42px rgba(201, 245, 106, .12); }
   100% { opacity: 1; box-shadow: inset 0 0 0 rgba(201, 245, 106, 0); }
 }
+@keyframes prop-float {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-5px) rotate(3deg); }
+}
+@keyframes arrival-in {
+  0% { opacity: .25; transform: translateX(-12px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+@keyframes paycheck-travel {
+  0% { transform: translateX(-15px); opacity: .2; }
+  30%, 70% { opacity: 1; }
+  100% { transform: translateX(15px); opacity: .2; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -629,6 +710,17 @@ dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
   .house-lab { padding-top: 58px; }
   .house-scene-top { display: block; }
   .house-live-dot { margin-top: 12px; }
+  .career-arrival { margin-inline: 18px; }
+  .budget-inflow { grid-template-columns: 1fr auto; margin-inline: 18px; }
+  .budget-inflow i { grid-column: 1 / -1; grid-row: 2; }
+  .budget-inflow b { grid-column: 2; grid-row: 1; }
+  .budget-house { min-height: 405px; margin-inline: 18px; padding-inline: 10px; }
+  .budget-roof { right: 7%; left: 7%; }
+  .budget-facade { height: 220px; padding: 7px; gap: 7px; }
+  .budget-room { padding: 9px; }
+  .budget-room strong { font-size: 14px; }
+  .budget-porch { grid-template-columns: 92px 1fr; margin-inline: 8px; }
+  .house-money-track { padding-inline: 18px; }
   .house-blueprint { min-height: 390px; }
   .house-body { right: 9%; left: 9%; }
   .blueprint-roof { right: 8%; left: 8%; }
