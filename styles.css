@@ -42,6 +42,57 @@ body::before {
   z-index: 20;
 }
 
+body.arrival-locked { overflow: hidden; }
+.arrival-gate { position: fixed; z-index: 100; inset: 0; display: grid; grid-template-columns: minmax(290px, .8fr) minmax(430px, 1.2fr); align-items: center; gap: 5vw; padding: 54px clamp(28px, 7vw, 110px); overflow: hidden; background: radial-gradient(circle at 72% 50%, rgba(120, 240, 190, .13), transparent 30rem), linear-gradient(120deg, #070b12 0%, #0b111a 58%, #111c28 100%); transition: opacity .85s ease, transform .85s cubic-bezier(.2, .8, .2, 1); }
+.arrival-gate::before, .arrival-gate::after { content: ""; position: absolute; pointer-events: none; }
+.arrival-gate::before { inset: 0; opacity: .18; background-image: linear-gradient(rgba(116, 200, 255, .08) 1px, transparent 1px), linear-gradient(90deg, rgba(116, 200, 255, .08) 1px, transparent 1px); background-size: 54px 54px; mask-image: linear-gradient(90deg, transparent, #000 34%, #000 78%, transparent); }
+.arrival-gate::after { right: 10%; bottom: -23rem; width: 45rem; height: 45rem; border: 1px solid rgba(201, 245, 106, .12); border-radius: 50%; box-shadow: 0 0 0 30px rgba(201, 245, 106, .025), 0 0 0 70px rgba(201, 245, 106, .02); }
+.arrival-gate.is-entering { transform: scale(1.03); opacity: 0; pointer-events: none; }
+.arrival-gate.is-gone { display: none; }
+.arrival-copy { position: relative; z-index: 2; max-width: 550px; }
+.arrival-copy h1 { margin: 0; font-size: clamp(38px, 5vw, 70px); line-height: 1; letter-spacing: -.07em; }
+.arrival-copy h1 span { color: var(--lime); }
+.arrival-lede { max-width: 470px; margin: 25px 0 28px; color: var(--muted); font-size: clamp(14px, 1.4vw, 18px); line-height: 1.65; }
+.arrival-instruction { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); font-family: ui-monospace, monospace; font-size: 10px; font-weight: 900; letter-spacing: .13em; }
+.arrival-instruction i { display: block; width: 9px; height: 9px; border: 2px solid var(--orange); border-radius: 50%; box-shadow: 0 0 0 5px rgba(255, 156, 99, .1), 0 0 20px var(--orange); animation: arrival-pulse 1.8s ease-in-out infinite; }
+.arrival-skip { display: block; margin-top: 24px; padding: 0; border: 0; color: var(--subtle); background: transparent; font-size: 11px; font-weight: 800; }
+.arrival-skip:hover, .arrival-skip:focus-visible { color: var(--lime); outline: none; }
+.arrival-skip span { margin-left: 7px; color: var(--lime); }
+.arrival-art { position: relative; z-index: 1; width: min(720px, 100%); justify-self: end; filter: drop-shadow(0 28px 52px rgba(0, 0, 0, .45)); }
+.arrival-art svg { display: block; width: 100%; height: auto; overflow: visible; }
+.arrival-sky { fill: url(#arrival-sky); stroke: rgba(226, 236, 245, .14); stroke-width: 2; }
+.arrival-moon { fill: rgba(246, 247, 249, .85); filter: drop-shadow(0 0 16px rgba(246, 247, 249, .28)); }
+.arrival-star { fill: var(--lime); filter: drop-shadow(0 0 6px var(--lime)); }
+.arrival-hill-back { fill: #111c26; }
+.arrival-hill-front { fill: #0b141b; }
+.arrival-house-glow { fill: rgba(255, 156, 99, .17); filter: url(#arrival-glow); }
+.arrival-roof { fill: url(#arrival-roof); stroke: rgba(246, 247, 249, .45); stroke-width: 3; }
+.arrival-roof-line { fill: none; stroke: var(--lime); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+.arrival-chimney { fill: #172630; stroke: rgba(226, 236, 245, .26); stroke-width: 2; }
+.arrival-smoke { fill: none; stroke: rgba(226, 236, 245, .22); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 8 10; }
+.arrival-house-front { fill: url(#arrival-wall); stroke: rgba(226, 236, 245, .35); stroke-width: 3; }
+.arrival-wall-detail { fill: none; stroke: rgba(226, 236, 245, .06); stroke-width: 2; }
+.arrival-window rect { fill: url(#arrival-window); stroke: var(--orange); stroke-width: 3; filter: drop-shadow(0 0 12px rgba(255, 156, 99, .35)); }
+.arrival-window path { fill: none; stroke: rgba(31, 34, 39, .65); stroke-width: 4; }
+.arrival-door-base { fill: #101820; stroke: var(--orange); stroke-width: 3; }
+.arrival-door-panel { fill: none; stroke: rgba(226, 236, 245, .15); stroke-width: 2; }
+.arrival-steps { fill: none; stroke: rgba(226, 236, 245, .28); stroke-width: 7; stroke-linecap: round; }
+.arrival-path { fill: rgba(116, 200, 255, .08); stroke: rgba(116, 200, 255, .3); stroke-width: 2; }
+.arrival-yard-line { fill: none; stroke: rgba(120, 240, 190, .27); stroke-width: 2; stroke-linecap: round; }
+.arrival-door-zone { position: absolute; top: 58.25%; left: 50%; width: 8.45%; height: 29.35%; transform: translateX(-50%); }
+.arrival-door { position: relative; display: block; width: 100%; height: 100%; padding: 0; border: 3px solid var(--orange); border-radius: 4px; color: var(--ink); background: linear-gradient(90deg, #101820, #1a2731 48%, #0d151d); box-shadow: inset 0 0 0 2px rgba(246, 247, 249, .06), 0 0 22px rgba(255, 156, 99, .17); cursor: pointer; transition: background .3s ease, border-color .3s ease, box-shadow .3s ease; }
+.arrival-door::before, .arrival-door::after { content: ""; position: absolute; left: 18%; right: 18%; height: 2px; background: rgba(226, 236, 245, .18); }
+.arrival-door::before { top: 34%; }
+.arrival-door::after { top: 58%; }
+.arrival-door:hover, .arrival-door:focus-visible { border-color: var(--lime); background: linear-gradient(90deg, #263d3c, #1d302e 48%, #152523); box-shadow: inset 0 0 0 2px rgba(201, 245, 106, .13), 0 0 30px rgba(201, 245, 106, .35); outline: none; }
+.arrival-door.is-open { border-color: var(--lime); background: linear-gradient(90deg, #b88655, #ffca73 48%, #a35346); transform: perspective(200px) rotateY(-48deg); transform-origin: left center; }
+.arrival-door-knob { position: absolute; top: 51%; right: 17%; width: 9px; height: 9px; border: 2px solid var(--orange); border-radius: 50%; background: #0b1116; }
+.arrival-door-knock { position: absolute; right: 50%; bottom: 6%; color: rgba(246, 247, 249, .65); font-family: ui-monospace, monospace; font-size: clamp(5px, .7vw, 8px); letter-spacing: .12em; transform: translateX(50%); }
+.arrival-gate.is-knocking .arrival-door { animation: arrival-knock .14s ease-in-out 3; }
+.arrival-gate.is-opening .arrival-door { animation: arrival-open .8s cubic-bezier(.2, .8, .2, 1) forwards; }
+.arrival-house-caption { display: flex; justify-content: space-between; gap: 12px; margin: 12px 4px 0; color: var(--subtle); font-family: ui-monospace, monospace; font-size: 8px; letter-spacing: .11em; text-transform: uppercase; }
+.arrival-house-caption b { color: var(--muted); font-weight: 500; letter-spacing: 0; text-transform: none; }
+
 a { color: inherit; text-decoration: none; }
 button, select, input { font: inherit; }
 button, select { cursor: pointer; }
@@ -774,6 +825,18 @@ dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
 .formula-card strong { margin-top: 5px; color: var(--lime); font-size: 14px; }
 .dialog-small { margin: 20px 0 0; color: var(--subtle); font-size: 10px; line-height: 1.6; }
 
+@keyframes arrival-pulse {
+  0%, 100% { opacity: .55; transform: scale(.8); }
+  50% { opacity: 1; transform: scale(1.18); }
+}
+@keyframes arrival-knock {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-4px) rotate(-1deg); }
+}
+@keyframes arrival-open {
+  0% { transform: perspective(200px) rotateY(0); }
+  100% { transform: perspective(200px) rotateY(-48deg); }
+}
 @keyframes live-pulse {
   0%, 100% { opacity: .55; transform: scale(.85); }
   50% { opacity: 1; transform: scale(1.15); }
@@ -831,6 +894,7 @@ dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
 }
 
 @media (max-width: 980px) {
+  .arrival-gate { gap: 24px; padding-inline: 32px; }
   .hero { gap: 35px; }
   .hero h1 { font-size: clamp(48px, 8vw, 70px); }
   .passport-section { grid-template-columns: 1fr; gap: 35px; }
@@ -850,6 +914,15 @@ dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
 }
 
 @media (max-width: 700px) {
+  .arrival-gate { grid-template-columns: 1fr; align-content: center; gap: 22px; padding: 30px 20px; overflow-y: auto; }
+  .arrival-copy { text-align: center; }
+  .arrival-copy h1 { font-size: clamp(35px, 10vw, 54px); }
+  .arrival-lede { margin: 17px auto 20px; font-size: 13px; }
+  .arrival-instruction { justify-content: center; }
+  .arrival-skip { margin-inline: auto; }
+  .arrival-art { width: min(590px, 100%); justify-self: center; }
+  .arrival-house-caption { display: block; text-align: center; }
+  .arrival-house-caption b { display: block; margin-top: 4px; }
   .shell { width: min(100% - 30px, 570px); }
   .site-nav { min-height: 68px; }
   .nav-links { gap: 13px; font-size: 10px; }

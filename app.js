@@ -1128,8 +1128,41 @@
     renderHomePassport();
   }
 
+  function initArrivalGate() {
+    var gate = $('#arrival-gate');
+    if (!gate) return;
+    var door = $('#arrival-door');
+    var skip = $('#arrival-skip');
+    var status = $('#arrival-status');
+    var entered = false;
+    document.body.classList.add('arrival-locked');
+    function enterSite() {
+      if (entered) return;
+      entered = true;
+      if (status) status.textContent = 'KNOCK. KNOCK. WELCOME INSIDE.';
+      gate.classList.add('is-knocking');
+      window.setTimeout(function () {
+        gate.classList.remove('is-knocking');
+        gate.classList.add('is-opening');
+      }, 440);
+      window.setTimeout(function () {
+        gate.classList.add('is-entering');
+        document.body.classList.remove('arrival-locked');
+      }, 860);
+      window.setTimeout(function () {
+        gate.classList.add('is-gone');
+      }, 1750);
+    }
+    if (door) {
+      door.addEventListener('click', enterSite);
+      door.addEventListener('dblclick', enterSite);
+    }
+    if (skip) skip.addEventListener('click', enterSite);
+  }
+
   if (page === 'dashboard') initDashboard();
   if (page === 'home') {
+    initArrivalGate();
     renderHome();
     initHomePassport();
   }
