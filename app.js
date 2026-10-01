@@ -602,6 +602,28 @@
     return result.rows.filter(function (item) { return item.key === key; })[0] || { key: key, label: key, value: 0, className: 'other' };
   }
 
+  function careerVisualMarkup(career) {
+    var figure = '<ellipse cx="67" cy="118" rx="39" ry="6" fill="rgba(0,0,0,.28)"></ellipse><circle cx="67" cy="34" r="16" fill="#f2c7a5" stroke="currentColor" stroke-width="2"></circle><path d="M46 69 Q67 52 88 69 L95 112 H39 Z" fill="currentColor" opacity=".9"></path><path d="M50 70 L31 98 M84 70 L102 98" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"></path><path d="M53 112 V124 M81 112 V124" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"></path>';
+    var prop = {
+      nurse: '<path d="M74 74 C104 72 105 104 80 103 C61 102 65 80 83 83" fill="none" stroke="#f6f7f9" stroke-width="2.5"></path><path d="M81 84 V75 M81 75 L88 70" fill="none" stroke="#f6f7f9" stroke-width="2.5" stroke-linecap="round"></path><path d="M50 22 H84 V31 H50 Z" fill="#f6f7f9" stroke="currentColor" stroke-width="2"></path><path d="M67 23 V30 M61 26.5 H73" stroke="currentColor" stroke-width="2"></path><circle cx="100" cy="42" r="20" fill="rgba(120,240,190,.15)" stroke="currentColor" stroke-width="1.5"></circle><path d="M92 42 H108 M100 34 V50" stroke="currentColor" stroke-width="3"></path>',
+      teacher: '<rect x="108" y="19" width="58" height="43" rx="3" fill="#172b35" stroke="currentColor" stroke-width="2"></rect><text x="119" y="47" fill="#c9f56a" font-size="16" font-family="monospace" font-weight="900">ABC</text><path d="M99 91 L118 77 L135 91 L116 105 Z" fill="#ff9c63" stroke="#f6f7f9" stroke-width="2"></path><path d="M109 85 L118 91 L127 85" fill="none" stroke="#f6f7f9" stroke-width="1.5"></path>',
+      developer: '<rect x="105" y="61" width="62" height="38" rx="4" fill="#172b35" stroke="currentColor" stroke-width="2"></rect><path d="M96 103 H176 L167 111 H105 Z" fill="#74c8ff" stroke="currentColor" stroke-width="2"></path><text x="116" y="85" fill="#74c8ff" font-size="15" font-family="monospace" font-weight="900">&lt;/&gt;</text><path d="M51 20 Q67 8 83 20" fill="none" stroke="#74c8ff" stroke-width="5"></path>',
+      electrician: '<path d="M50 23 Q67 7 84 23 V29 H50 Z" fill="#ff9c63" stroke="currentColor" stroke-width="2"></path><path d="M66 70 L78 87 L68 87 L77 105 L56 82 L66 82 Z" fill="#ff9c63" stroke="#f6f7f9" stroke-width="2"></path><path d="M107 32 L125 48 L107 64" fill="none" stroke="#ff9c63" stroke-width="4" stroke-linecap="round"></path>',
+      mechanic: '<path d="M48 24 Q67 8 86 24 L82 34 H52 Z" fill="#ff9c63" stroke="currentColor" stroke-width="2"></path><path d="M105 31 L137 63 M132 31 L102 63" stroke="#f6f7f9" stroke-width="6" stroke-linecap="round"></path><circle cx="118" cy="47" r="22" fill="none" stroke="#ff9c63" stroke-width="3"></circle><path d="M123 77 H169 L174 99 H119 Z" fill="#172b35" stroke="currentColor" stroke-width="2"></path>',
+      analyst: '<rect x="108" y="45" width="58" height="58" rx="4" fill="#172b35" stroke="currentColor" stroke-width="2"></rect><path d="M118 88 V74 M132 88 V62 M146 88 V70 M160 88 V53" stroke="#c9f56a" stroke-width="7" stroke-linecap="round"></path><path d="M101 25 L108 32 M102 32 L109 25" stroke="#f6f7f9" stroke-width="2"></path><path d="M48 33 H57 M77 33 H86" stroke="#f6f7f9" stroke-width="2"></path>',
+      designer: '<circle cx="130" cy="65" r="25" fill="#172b35" stroke="currentColor" stroke-width="2"></circle><circle cx="119" cy="57" r="4" fill="#ff9c63"></circle><circle cx="132" cy="51" r="4" fill="#c9f56a"></circle><circle cx="143" cy="60" r="4" fill="#74c8ff"></circle><path d="M105 91 L158 31" stroke="#f3c86b" stroke-width="7" stroke-linecap="round"></path><path d="M104 93 L111 91" stroke="#f6f7f9" stroke-width="3"></path>',
+      retail: '<path d="M111 51 H157 L163 104 H105 Z" fill="#172b35" stroke="currentColor" stroke-width="2"></path><path d="M121 52 C121 33 147 33 147 52" fill="none" stroke="#ff6f6f" stroke-width="4"></path><path d="M112 63 H157" stroke="#ff6f6f" stroke-width="2"></path>',
+      fallback: '<circle cx="128" cy="59" r="23" fill="rgba(201,245,106,.13)" stroke="currentColor" stroke-width="2"></circle><text x="113" y="66" fill="#c9f56a" font-size="17" font-family="monospace" font-weight="900">✦</text>'
+    };
+    return '<svg viewBox="0 0 180 130" role="img" aria-label="Illustration of a ' + escapeHtml(career.name) + '">' + figure + (prop[career.id] || prop.fallback) + '</svg>';
+  }
+
+  function renderCareerVisual(career) {
+    var visual = $('#home-career-visual');
+    if (!visual) return;
+    visual.innerHTML = careerVisualMarkup(career);
+  }
+
   function blueprintRoomMarkup(result, room) {
     var row = houseRow(result, room.category);
     var compact = room.h < 62;
@@ -615,7 +637,7 @@
   }
 
   function blueprintLayout(result) {
-    var garage = { category: 'transport', label: 'Garage · commute', x: 535, y: 350, w: 170, h: 39 };
+    var garage = { category: 'transport', label: 'Garage · commute', x: 535, y: 330, w: 170, h: 39 };
     var layouts = {
       studio: [
         { category: 'lifestyle', label: 'Open living / sleep', x: 55, y: 62, w: 365, h: 205 },
@@ -658,9 +680,11 @@
     var drawing = $('#home-house-drawing');
     if (!drawing) return;
     var rooms = blueprintLayout(result);
-    var roomMarkup = rooms.map(function (room) { return blueprintRoomMarkup(result, room); }).join('');
+    var roomMarkup = rooms.map(function (room) {
+      return blueprintRoomMarkup(result, { category: room.category, label: room.label, x: room.x + 20, y: room.y + 70, w: room.w, h: room.h });
+    }).join('');
     var profileLabel = housingSpec(result.housingProfile);
-    drawing.innerHTML = '<svg viewBox="0 0 760 410" role="img" aria-label="' + escapeHtml(profileLabel + ' interactive floor plan') + '"><defs><pattern id="blueprint-grid-pattern" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M 24 0 L 0 0 0 24" fill="none" stroke="rgba(116,200,255,.13)" stroke-width="1"></path></pattern></defs><rect class="blueprint-grid" width="760" height="410"></rect><text class="blueprint-home-title" x="24" y="28">' + escapeHtml(result.housingProfile.bedrooms === 0 ? 'STUDIO LAYOUT' : result.housingProfile.bedrooms + ' BEDROOM LAYOUT') + '</text><text class="blueprint-home-note" x="24" y="45">Rent is the roof; rooms show the cost categories that support the lifestyle.</text><rect class="blueprint-shell" x="40" y="48" width="680" height="294" rx="7"></rect>' + roomMarkup + '<path class="blueprint-garage-line" d="M 535 342 L 535 350 M 705 342 L 705 350"></path><text class="blueprint-home-note" x="535" y="402">transport leaves the house through the commute</text></svg>';
+    drawing.innerHTML = '<svg viewBox="0 0 800 475" role="img" aria-label="' + escapeHtml(profileLabel + ' interactive floor plan') + '"><defs><pattern id="blueprint-grid-pattern" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M 24 0 L 0 0 0 24" fill="none" stroke="rgba(116,200,255,.13)" stroke-width="1"></path></pattern></defs><rect class="blueprint-grid" width="800" height="475"></rect><text class="blueprint-home-title" x="24" y="24">' + escapeHtml(result.housingProfile.bedrooms === 0 ? 'STUDIO HOUSE PLAN' : result.housingProfile.bedrooms + ' BEDROOM HOUSE PLAN') + '</text><text class="blueprint-home-note" x="24" y="42">Peaked roof · interior rooms · front door · garage / commute</text><path class="blueprint-roof-shape" d="M 34 145 L 400 25 L 766 145 Z"></path><path class="blueprint-house-body" d="M 60 132 H 740 V 438 H 60 Z"></path><path class="blueprint-chimney" d="M 610 82 V 34 H 653 V 95"></path>' + roomMarkup + '<rect class="blueprint-front-door" x="375" y="405" width="50" height="33" rx="4"></rect><circle class="blueprint-door-knob" cx="414" cy="422" r="3"></circle><path class="blueprint-window" d="M 73 177 H 105 M 73 185 H 105 M 695 177 H 727 M 695 185 H 727"></path><path class="blueprint-driveway" d="M 620 438 L 594 466 H 746 L 720 438"></path><text class="blueprint-front-label" x="382" y="457">FRONT</text><text class="blueprint-home-note" x="602" y="471">garage / commute</text></svg>';
     setText('#home-house-type', result.housingProfile.bedrooms === 0 ? 'STUDIO HOME' : result.housingProfile.bedrooms + ' BEDROOM HOME');
     setText('#home-house-profile', profileLabel);
     setText('#home-house-savings-value', money(houseRow(result, 'savings').value) + ' / mo');
@@ -708,9 +732,9 @@
       void character.offsetWidth;
       character.classList.add('scenario-update');
     }
+    renderCareerVisual(result.career);
     setText('#home-career-role', result.career.name);
     setText('#home-career-family', result.career.family + ' · median salary lens');
-    setText('#home-career-icon', result.career.icon || '✦');
     setText('#home-career-prop', result.career.icon || '✦');
     setText('#home-house-label', result.career.name + ' · ' + result.state.name);
     setText('#home-house-gross', money(result.salary / 12));

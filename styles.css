@@ -228,6 +228,10 @@ button, select { cursor: pointer; }
 .career-card strong { margin-top: 7px; overflow: hidden; color: var(--ink); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .career-card small { margin-top: 2px; overflow: hidden; color: var(--subtle); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
 .career-card b { margin-top: 8px; color: var(--lime); font-family: ui-monospace, monospace; font-size: 10px; }
+.career-character { width: 158px; height: 112px; flex: 0 0 158px; place-items: center; border-radius: 15px; overflow: visible; }
+.career-character .character-glow { width: 74px; height: 74px; filter: blur(22px); opacity: .28; }
+.career-visual { position: relative; z-index: 1; width: 100%; height: 100%; color: var(--character-color); }
+.career-visual svg { display: block; width: 100%; height: 100%; overflow: visible; }
 
 .house-finance-strip { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 19px 25px 0; color: var(--muted); font-family: ui-monospace, monospace; font-size: 8px; letter-spacing: .08em; }
 .house-finance-strip span, .house-finance-strip strong { display: inline-flex; align-items: center; gap: 6px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 6px; background: rgba(255, 255, 255, .025); }
@@ -252,7 +256,9 @@ button, select { cursor: pointer; }
 .budget-room.room-utilities { --room-color: #e6d76a; }
 .budget-room.room-lifestyle { --room-color: var(--violet); }
 .budget-foundation { min-height: 51px; }
-.budget-house { min-height: 515px; padding-top: 55px; }
+.budget-house { min-height: 515px; padding-top: 16px; }
+.budget-house > .budget-roof { display: none; }
+.budget-house::before { display: none; }
 .budget-house[data-home-profile="studio"] .budget-roof { right: 19%; left: 19%; }
 .budget-house[data-home-profile="two-bedroom"] .budget-roof { right: 7%; left: 7%; }
 .budget-house[data-home-profile="three-bedroom"] .budget-roof { right: 4%; left: 4%; border-radius: 70px 70px 0 0; }
@@ -263,6 +269,14 @@ button, select { cursor: pointer; }
 .blueprint-drawing svg { display: block; width: 100%; height: 100%; }
 .blueprint-grid { fill: url(#blueprint-grid-pattern); opacity: .55; }
 .blueprint-shell { fill: rgba(8, 14, 18, .54); stroke: rgba(201, 245, 106, .55); stroke-width: 2; }
+.blueprint-roof-shape { fill: rgba(201, 245, 106, .12); stroke: var(--lime); stroke-width: 2.5; }
+.blueprint-house-body { fill: rgba(8, 14, 18, .72); stroke: rgba(201, 245, 106, .55); stroke-width: 2; }
+.blueprint-chimney { fill: rgba(116, 200, 255, .1); stroke: var(--blue); stroke-width: 2; }
+.blueprint-front-door { fill: rgba(201, 245, 106, .18); stroke: var(--lime); stroke-width: 2; }
+.blueprint-door-knob { fill: var(--lime); }
+.blueprint-window { fill: none; stroke: var(--blue); stroke-width: 4; opacity: .9; }
+.blueprint-driveway { fill: rgba(116, 200, 255, .08); stroke: var(--blue); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.blueprint-front-label { fill: var(--lime); font-family: ui-monospace, monospace; font-size: 8px; letter-spacing: .13em; }
 .blueprint-room { --room-color: var(--blue); cursor: pointer; outline: none; }
 .blueprint-room[data-house-category="housing"] { --room-color: var(--orange); }
 .blueprint-room[data-house-category="food"] { --room-color: var(--lime); }
@@ -847,6 +861,7 @@ dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
   .house-scene-top { display: block; }
   .house-live-dot { margin-top: 12px; }
   .career-arrival { margin-inline: 18px; }
+  .career-character { width: 118px; height: 92px; flex-basis: 118px; }
   .career-deck-head { display: block; }
   .career-deck-head > span:last-child { display: block; margin-top: 5px; }
   .career-deck { grid-template-columns: repeat(2, 1fr); }
