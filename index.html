@@ -29,6 +29,9 @@
           <linearGradient id="arrival-wall" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#263a47"></stop><stop offset="1" stop-color="#111a23"></stop></linearGradient>
           <linearGradient id="arrival-roof" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#78f0be"></stop><stop offset="1" stop-color="#5d9d9d"></stop></linearGradient>
           <radialGradient id="arrival-window" cx="50%" cy="45%"><stop offset="0" stop-color="#fff3b0"></stop><stop offset=".55" stop-color="#ffb65f"></stop><stop offset="1" stop-color="#a6503a"></stop></radialGradient>
+          <pattern id="arrival-siding" width="20" height="14" patternUnits="userSpaceOnUse"><rect width="20" height="14" fill="#1b2a34"></rect><path d="M0 13 H20" stroke="#30424b" stroke-width="1"></path><path d="M0 1 H20" stroke="#0e1921" stroke-width="1" opacity=".7"></path></pattern>
+          <pattern id="arrival-roof-shingles" width="36" height="18" patternUnits="userSpaceOnUse"><rect width="36" height="18" fill="#1b2931"></rect><path d="M0 17 H36 M0 0 H18 M18 0 H36" stroke="#384b51" stroke-width="1"></path><path d="M0 3 H36" stroke="#101a22" stroke-width="1" opacity=".7"></path></pattern>
+          <linearGradient id="arrival-interior-warm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd889"></stop><stop offset=".55" stop-color="#a65f47"></stop><stop offset="1" stop-color="#1a2730"></stop></linearGradient>
           <filter id="arrival-glow"><feGaussianBlur stdDeviation="14"></feGaussianBlur></filter>
         </defs>
         <rect class="arrival-sky" width="760" height="600" rx="28"></rect>
@@ -38,11 +41,16 @@
         <path class="arrival-hill arrival-hill-front" d="M0 486 Q150 390 305 480 Q460 375 760 469 V600 H0 Z"></path>
         <ellipse class="arrival-house-glow" cx="380" cy="421" rx="186" ry="107"></ellipse>
         <path class="arrival-roof" d="M112 266 L380 70 L648 266 Z"></path>
+        <path class="arrival-roof-overhang" d="M112 266 L380 70 L648 266 L630 276 L380 101 L130 276 Z"></path>
         <path class="arrival-roof-line" d="M112 266 L380 70 L648 266"></path>
+        <path class="arrival-gable-window" d="M365 158 L395 158 L395 190 L365 190 Z"></path><path class="arrival-gable-window-cross" d="M380 158 V190 M365 174 H395"></path>
         <rect class="arrival-chimney" x="528" y="142" width="44" height="102" rx="3"></rect>
         <path class="arrival-smoke" d="M550 140 C520 112 580 99 553 68 C530 43 583 35 575 11"></path>
+        <path class="arrival-house-side" d="M610 247 L642 267 V526 H610 Z"></path>
         <rect class="arrival-house-front" x="150" y="247" width="460" height="279" rx="6"></rect>
+        <path class="arrival-house-base" d="M145 526 H647 V539 H145 Z"></path>
         <path class="arrival-wall-detail" d="M150 300 H610 M150 352 H610 M150 404 H610 M150 456 H610"></path>
+        <path class="arrival-porch-roof" d="M315 361 H445 L430 338 H330 Z"></path><path class="arrival-porch-shadow" d="M323 360 H437 V374 H323 Z"></path><path class="arrival-porch-column" d="M324 360 V526 M436 360 V526"></path><path class="arrival-porch-rail" d="M310 500 H450 M310 500 V526 M450 500 V526"></path>
         <g class="arrival-window" transform="translate(205 314)"><rect width="84" height="70" rx="4"></rect><path d="M42 0 V70 M0 35 H84"></path></g>
         <g class="arrival-window" transform="translate(471 314)"><rect width="84" height="70" rx="4"></rect><path d="M42 0 V70 M0 35 H84"></path></g>
         <g class="arrival-interior"><rect x="348" y="350" width="64" height="176" rx="4"></rect><path class="arrival-interior-light" d="M348 350 H412 V526 H348 Z"></path><path class="arrival-interior-floor" d="M350 477 L410 477 L427 526 H333 Z"></path><circle class="arrival-interior-lamp" cx="380" cy="385" r="8"></circle><path class="arrival-interior-stairs" d="M357 468 H403 M361 456 H399 M365 444 H395"></path><rect class="arrival-interior-screen" x="365" y="398" width="30" height="17" rx="2"></rect><path class="arrival-interior-screen-mark" d="M371 407 H389 M375 403 V411"></path></g>
@@ -50,6 +58,7 @@
         <path class="arrival-door-panel" d="M359 370 H401 V426 H359 Z M359 440 H401 V507 H359 Z"></path>
         <path class="arrival-steps" d="M324 526 H436 M312 541 H448 M300 556 H460"></path>
         <path class="arrival-path" d="M348 556 Q380 526 412 556 L493 600 H267 Z"></path>
+        <path class="arrival-shrub arrival-shrub-left" d="M112 522 C94 500 117 475 137 492 C142 462 179 468 177 500 C205 482 224 512 202 528 Z"></path><path class="arrival-shrub arrival-shrub-right" d="M566 526 C548 500 570 476 591 494 C598 462 632 470 633 501 C660 480 681 510 657 529 Z"></path>
         <path class="arrival-yard-line" d="M85 555 Q150 520 214 548 M546 548 Q625 514 700 555"></path>
       </svg>
       <div class="arrival-door-zone">

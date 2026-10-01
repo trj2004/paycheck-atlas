@@ -1150,10 +1150,10 @@
         if (status) status.textContent = 'ENTERING THE LIVING BLUEPRINT...';
         gate.classList.add('is-entering');
         document.body.classList.remove('arrival-locked');
-      }, 1180);
+      }, 1260);
       window.setTimeout(function () {
         gate.classList.add('is-gone');
-      }, 2200);
+      }, 3150);
     }
     if (door) {
       door.addEventListener('click', enterSite);
