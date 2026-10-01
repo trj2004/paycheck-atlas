@@ -28,6 +28,10 @@
     return Array.prototype.slice.call((root || document).querySelectorAll(selector));
   }
 
+  function escapeHtml(value) {
+    return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+  }
+
   function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
   }
@@ -552,12 +556,31 @@
     setText('#home-housing-label', scenarioA.housingProfile.label);
     setText('#home-move-a', scenarioA.state.name);
     setText('#home-move-b', scenarioB.state.name);
+    renderHomeStateSwipe(scenarioA, scenarioB);
     $('#home-housing-cards').innerHTML = housingCardMarkup(scenarioA, 'from', 'main', true) + housingCardMarkup(scenarioB, 'to', 'compare', true);
     var rentDifference = scenarioA.housingCost - scenarioB.housingCost;
     var winner = rentDifference <= 0 ? scenarioA : scenarioB;
     setText('#home-move-caption', 'The home stays constant. ' + winner.state.name + ' leaves ' + money(Math.abs(scenarioA.leftover - scenarioB.leftover)) + ' more monthly room under this plan.');
     animateHomeHouseMove();
     $('#home-housing-insight').innerHTML = '<strong>' + winner.state.name + '</strong> gives this ' + scenarioA.housingProfile.label.toLowerCase() + ' a lower modeled rent. The difference is ' + money(Math.abs(rentDifference)) + ' per month before food, transportation, taxes, and the rest of the life plan are added.';
+  }
+
+  function updateHomeStateSwipe(value) {
+    var swipe = $('#home-state-swipe');
+    if (swipe) swipe.style.setProperty('--split', String(value) + '%');
+  }
+
+  function renderHomeStateSwipe(scenarioA, scenarioB) {
+    setText('#home-swipe-a-state', scenarioA.state.name);
+    setText('#home-swipe-b-state', scenarioB.state.name);
+    setText('#home-swipe-a-leftover', signedMoney(scenarioA.leftover));
+    setText('#home-swipe-b-leftover', signedMoney(scenarioB.leftover));
+    setText('#home-swipe-a-copy', money(scenarioA.housingCost) + ' rent · ' + percent(scenarioA.housingShare) + ' of essentials');
+    setText('#home-swipe-b-copy', money(scenarioB.housingCost) + ' rent · ' + percent(scenarioB.housingShare) + ' of essentials');
+    var delta = scenarioA.leftover - scenarioB.leftover;
+    setText('#home-swipe-explanation', 'The divider reveals two versions of the same life. ' + (delta >= 0 ? scenarioA.state.name : scenarioB.state.name) + ' leaves ' + money(Math.abs(delta)) + ' more per month after the same career, home, and lifestyle plan.');
+    var divider = $('#home-state-divider');
+    updateHomeStateSwipe(divider ? divider.value : 50);
   }
 
   function animateHomeHouseMove() {
@@ -570,18 +593,26 @@
   }
 
   function houseRow(result, key) {
+    if (key === 'lifestyle') {
+      var other = result.rows.filter(function (item) { return item.key === 'other'; })[0];
+      var discretionary = result.rows.filter(function (item) { return item.key === 'discretionary'; })[0];
+      var childcare = result.rows.filter(function (item) { return item.key === 'childcare'; })[0];
+      return { key: key, label: 'Other life costs', value: (other ? other.value : 0) + (discretionary ? discretionary.value : 0) + (childcare ? childcare.value : 0), className: 'other' };
+    }
     return result.rows.filter(function (item) { return item.key === key; })[0] || { key: key, label: key, value: 0, className: 'other' };
   }
 
   function renderHomeHouse(result) {
     if (!$('#house-lab-title')) return;
-    var roomKeys = ['housing', 'food', 'transport', 'health', 'savings'];
-    var roomLabels = { housing: 'Housing', food: 'Food', transport: 'Transport', health: 'Health care', savings: 'Savings target' };
+    var roomKeys = ['housing', 'food', 'transport', 'health', 'utilities', 'lifestyle', 'savings'];
+    var roomLabels = { housing: 'Housing', food: 'Food', transport: 'Transportation', health: 'Health care', utilities: 'Utilities', lifestyle: 'Other life costs', savings: 'Savings target' };
     var roomCopy = {
       housing: 'Housing costs ' + money(result.housingCost) + ' per month, or ' + percent(result.housingCost / result.takeHome) + ' of take-home pay. A move between states changes this number before the rest of the plan is considered.',
       food: 'Food takes ' + money(houseRow(result, 'food').value) + ' each month in this plan. Household size and the local price level move this room more than the career itself.',
       transport: 'Transportation takes ' + money(houseRow(result, 'transport').value) + ' per month. A lower-rent state is not automatically cheaper if getting to work costs more.',
       health: 'Health care is modeled at ' + money(houseRow(result, 'health').value) + ' per month. It is part of the basic-life plan even though it is easy to overlook in a salary comparison.',
+      utilities: 'Utilities take ' + money(houseRow(result, 'utilities').value) + ' per month. This category follows the home profile and local prices, so a larger home can increase pressure even when rent is unchanged.',
+      lifestyle: 'Other life costs combine everyday needs, personal spending, and childcare when the household includes children. In this scenario that bundle uses ' + money(houseRow(result, 'lifestyle').value) + ' each month.',
       savings: 'The foundation sets aside ' + money(houseRow(result, 'savings').value) + ' per month. A paycheck can cover the bills and still feel fragile if no room remains for shocks or goals.'
     };
     var character = $('#home-career-character');
@@ -596,6 +627,8 @@
     setText('#home-career-icon', result.career.icon || '✦');
     setText('#home-career-prop', result.career.icon || '✦');
     setText('#home-house-label', result.career.name + ' · ' + result.state.name);
+    setText('#home-house-gross', money(result.salary / 12));
+    setText('#home-house-tax', '−' + money(result.salary / 12 - result.takeHome));
     setText('#home-house-take-home', money(result.takeHome) + ' / mo');
     setText('#home-house-budget', money(result.monthlyBudget));
     setText('#home-house-leftover', signedMoney(result.leftover));
@@ -617,6 +650,13 @@
     setText('#home-house-analysis-note', result.leftover >= 0 ? 'After the full plan, this scenario keeps ' + money(result.leftover) + ' of monthly breathing room.' : 'After the full plan, this scenario has a ' + money(Math.abs(result.leftover)) + ' monthly gap to close.');
     setText('#home-house-budget-caption', 'The door shows ' + signedMoney(result.leftover) + ' after a ' + money(result.monthlyBudget) + ' monthly plan. Click another room to see how that category contributes to the result.');
     setText('#home-house-reading-copy', 'The rooms are monthly categories, not separate bills. Together they create the modeled plan; the foundation is the savings target, and the door is the remaining income after the plan.');
+    var canvas = $('#home-house-canvas');
+    if (canvas) {
+      canvas.setAttribute('data-pressure', result.leftover < 0 ? 'gap' : result.ratio < 1.2 ? 'strained' : 'comfortable');
+      canvas.classList.remove('scenario-update');
+      void canvas.offsetWidth;
+      canvas.classList.add('scenario-update');
+    }
     $all('.house-room').forEach(function (button) {
       var active = button.getAttribute('data-house-category') === activeHomeHouseCategory;
       button.classList.toggle('active', active);
@@ -806,6 +846,45 @@
     renderCpiLens(result, $('#home-trend'));
   }
 
+  function renderHomeTimeMachine(result) {
+    var slider = $('#home-time-scrubber');
+    if (!slider) return;
+    var year = Number(slider.value || latestYear());
+    var timed = calculate({ careerId: result.career.id, stateCode: result.state.code, year: year, householdId: result.household.id, percentileKey: result.percentileKey, modeId: result.mode.id, housingId: result.housingId, customSalary: result.customSalary || '' });
+    var first = calculate({ careerId: result.career.id, stateCode: result.state.code, year: DATA.years[0], householdId: result.household.id, percentileKey: result.percentileKey, modeId: result.mode.id, housingId: result.housingId, customSalary: result.customSalary || '' });
+    var last = calculate({ careerId: result.career.id, stateCode: result.state.code, year: latestYear(), householdId: result.household.id, percentileKey: result.percentileKey, modeId: result.mode.id, housingId: result.housingId, customSalary: result.customSalary || '' });
+    setText('#home-time-year', String(year));
+    setText('#home-time-status', year === latestYear() ? 'LATEST PROTOTYPE YEAR' : result.state.name.toUpperCase() + ' · ' + result.career.name.toUpperCase());
+    setText('#home-time-pay', money(timed.takeHome));
+    setText('#home-time-cost', money(timed.monthlyBudget));
+    setText('#home-time-leftover', signedMoney(timed.leftover));
+    setText('#home-time-ratio', ratio(timed.ratio) + ' affordability ratio');
+    setText('#home-time-house-leftover', signedMoney(timed.leftover));
+    var house = $('#home-time-house');
+    if (house) {
+      house.setAttribute('data-pressure', timed.leftover < 0 ? 'gap' : timed.ratio < 1.2 ? 'strained' : 'comfortable');
+      house.style.setProperty('--age', String((year - DATA.years[0]) / (latestYear() - DATA.years[0] || 1)));
+    }
+    setText('#home-time-house-caption', timed.leftover >= 0 ? 'The house stays above water with ' + money(timed.leftover) + ' left in ' + String(year) + '.' : 'The house shows pressure because the modeled plan is short by ' + money(Math.abs(timed.leftover)) + ' in ' + String(year) + '.');
+    var payChange = Math.round((last.takeHome / first.takeHome - 1) * 100);
+    var costChange = Math.round((last.monthlyBudget / first.monthlyBudget - 1) * 100);
+    setText('#home-time-explanation', 'From ' + DATA.years[0] + ' to ' + latestYear() + ', this ' + result.career.name.toLowerCase() + ' scenario sees take-home pay change by ' + payChange + '% while the modeled basic-life plan changes by ' + costChange + '%. In ' + String(year) + ', the selected year leaves ' + signedMoney(timed.leftover) + ' after the plan.');
+  }
+
+  function renderCareerDeck(activeCareerId) {
+    var deck = $('#home-career-deck');
+    if (!deck) return;
+    deck.innerHTML = DATA.careers.map(function (career) {
+      return '<button class="career-card' + (career.id === activeCareerId ? ' active' : '') + '" type="button" data-career-id="' + escapeHtml(career.id) + '"><span class="career-card-icon">' + escapeHtml(career.icon) + '</span><strong>' + escapeHtml(career.name) + '</strong><small>' + escapeHtml(career.family) + '</small><b>' + compactMoney(career.base) + ' / yr</b></button>';
+    }).join('');
+    $all('.career-card', deck).forEach(function (button) {
+      button.addEventListener('click', function () {
+        $('#home-career-select').value = button.getAttribute('data-career-id');
+        renderHomePassport();
+      });
+    });
+  }
+
   function renderHome() {
     var result = calculate({ careerId: 'nurse', stateCode: 'TX', year: latestYear(), householdId: 'solo', percentileKey: 'median', modeId: 'balanced', housingId: 'one-bedroom' });
     renderHomeScenario(result);
@@ -842,10 +921,12 @@
     var housingId = $('#home-housing-select').value;
     var scenarioA = calculate({ careerId: careerId, stateCode: stateA, year: latestYear(), householdId: 'solo', percentileKey: 'median', modeId: 'balanced', housingId: housingId });
     var scenarioB = calculate({ careerId: careerId, stateCode: stateB, year: latestYear(), householdId: 'solo', percentileKey: 'median', modeId: 'balanced', housingId: housingId });
+    renderCareerDeck(careerId);
     renderHomeHero(scenarioA);
     renderHomeHousing(scenarioA, scenarioB);
     renderHomeScenario(scenarioA);
     renderHomeHouse(scenarioA);
+    renderHomeTimeMachine(scenarioA);
     setText('#home-passport-a', '');
     setText('#home-passport-b', '');
     $('#home-passport-a').innerHTML = '<small>' + scenarioA.state.name + '</small><strong>' + signedMoney(scenarioA.leftover) + ' / mo</strong>';
@@ -868,6 +949,18 @@
     $all('#home-career-select, #home-state-a, #home-state-b, #home-housing-select').forEach(function (element) {
       element.addEventListener('change', renderHomePassport);
     });
+    var divider = $('#home-state-divider');
+    if (divider) divider.addEventListener('input', function () { updateHomeStateSwipe(divider.value); });
+    var timeScrubber = $('#home-time-scrubber');
+    if (timeScrubber) {
+      timeScrubber.min = String(DATA.years[0]);
+      timeScrubber.max = String(latestYear());
+      timeScrubber.value = String(latestYear());
+      timeScrubber.addEventListener('input', function () {
+        var result = calculate({ careerId: $('#home-career-select').value, stateCode: $('#home-state-a').value, year: latestYear(), householdId: 'solo', percentileKey: 'median', modeId: 'balanced', housingId: $('#home-housing-select').value });
+        renderHomeTimeMachine(result);
+      });
+    }
     $all('.house-room').forEach(function (button) {
       button.addEventListener('click', function () {
         activeHomeHouseCategory = button.getAttribute('data-house-category');
