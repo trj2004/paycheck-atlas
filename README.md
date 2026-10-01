@@ -10,7 +10,7 @@ The final dataset will use annual occupation wages, regional price levels, CPI c
 
 > How does location affect the purchasing power of a full-time salary?
 
-The prototype now also demonstrates a second lens: whether a paycheck has kept up with the cost of a basic life over a ten-year window (2015–2024), and what the same bedroom/square-footage housing benchmark costs in different states.
+The prototype now also demonstrates a second lens: whether a paycheck has kept up with the cost of a basic life over a ten-year window (2015–2024), and what the same bedroom/bathroom/square-footage housing profile costs in different states.
 
 ## Files
 

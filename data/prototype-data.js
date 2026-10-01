@@ -13,10 +13,10 @@ window.PAYCHECK_ATLAS = {
     { year: 2024, all: 122.5, housing: 119.8, food: 124.4, transport: 126.8, health: 117.5, utilities: 125.1, other: 121.8 }
   ],
   housing: [
-    { id: "studio", label: "Studio · 500 sq ft", bedrooms: 0, sqft: 500, rentFactor: 0.78 },
-    { id: "one-bedroom", label: "1 bedroom · 750 sq ft", bedrooms: 1, sqft: 750, rentFactor: 1.00 },
-    { id: "two-bedroom", label: "2 bedrooms · 1,000 sq ft", bedrooms: 2, sqft: 1000, rentFactor: 1.28 },
-    { id: "three-bedroom", label: "3 bedrooms · 1,400 sq ft", bedrooms: 3, sqft: 1400, rentFactor: 1.62 }
+    { id: "studio", label: "Studio · 1 bath · 500 sq ft", bedrooms: 0, bathrooms: 1, sqft: 500, rentFactor: 0.78 },
+    { id: "one-bedroom", label: "1 bedroom · 1 bath · 750 sq ft", bedrooms: 1, bathrooms: 1, sqft: 750, rentFactor: 1.00 },
+    { id: "two-bedroom", label: "2 bedrooms · 1.5 baths · 1,000 sq ft", bedrooms: 2, bathrooms: 1.5, sqft: 1000, rentFactor: 1.28 },
+    { id: "three-bedroom", label: "3 bedrooms · 2 baths · 1,400 sq ft", bedrooms: 3, bathrooms: 2, sqft: 1400, rentFactor: 1.62 }
   ],
   states: [
     { code: "CA", name: "California", rpp: 110.7, wage: 1.18, rent: 2250, transport: 455, tax: 0.255, mood: "high-cost" },

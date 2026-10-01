@@ -128,7 +128,7 @@
       career: career,
       household: household,
       mode: mode,
-      housingProfile: selectedHousing || { id: 'household-default', label: household.name + ' home assumption', bedrooms: null, sqft: null, rentFactor: household.home },
+      housingProfile: selectedHousing || { id: 'household-default', label: household.name + ' home assumption', bedrooms: null, bathrooms: null, sqft: null, rentFactor: household.home },
       housingId: selectedHousing ? selectedHousing.id : '',
       percentile: percentile,
       percentileKey: options.percentileKey || 'median',
@@ -508,10 +508,18 @@
     }
   }
 
+  function housingSpec(profile) {
+    if (!profile || profile.bedrooms === null || profile.bedrooms === undefined) return profile ? profile.label : '';
+    var bedroomText = profile.bedrooms === 0 ? 'Studio' : profile.bedrooms + (profile.bedrooms === 1 ? ' bedroom' : ' bedrooms');
+    var bathText = profile.bathrooms === 1 ? '1 bath' : profile.bathrooms + ' baths';
+    var sqftText = Number(profile.sqft).toLocaleString('en-US') + ' sq ft';
+    return bedroomText + ' · ' + bathText + ' · ' + sqftText;
+  }
+
   function housingCardMarkup(item, label, className, compact) {
     var rentShare = item.housingCost / item.takeHome;
     var tag = label || 'scenario';
-    return '<article class="' + (compact ? 'home-housing-card ' : 'housing-card ') + (className || '') + '"><span>' + tag + '</span><h3>' + item.state.name + '</h3><strong class="' + (compact ? 'home-housing-rent' : 'housing-rent') + '">' + money(item.housingCost) + '<small> / month rent</small></strong><div class="' + (compact ? 'home-housing-details' : 'housing-details') + '"><div><span>Rent share</span><strong class="' + (rentShare <= .3 ? 'good' : 'tight') + '">' + percent(rentShare) + '</strong></div><div><span>After full plan</span><strong class="' + (item.leftover >= 0 ? 'good' : 'tight') + '">' + signedMoney(item.leftover) + '</strong></div></div></article>';
+    return '<article class="' + (compact ? 'home-housing-card ' : 'housing-card ') + (className || '') + '"><span>' + tag + '</span><h3>' + item.state.name + '</h3><small class="' + (compact ? 'home-housing-spec' : 'housing-spec') + '">' + housingSpec(item.housingProfile) + '</small><strong class="' + (compact ? 'home-housing-rent' : 'housing-rent') + '">' + money(item.housingCost) + '<small> / month rent</small></strong><div class="' + (compact ? 'home-housing-details' : 'housing-details') + '"><div><span>Rent share</span><strong class="' + (rentShare <= .3 ? 'good' : 'tight') + '">' + percent(rentShare) + '</strong></div><div><span>After full plan</span><strong class="' + (item.leftover >= 0 ? 'good' : 'tight') + '">' + signedMoney(item.leftover) + '</strong></div></div></article>';
   }
 
   function renderHousingLens(result, comparison) {

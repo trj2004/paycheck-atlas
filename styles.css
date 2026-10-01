@@ -181,6 +181,7 @@ button, select { cursor: pointer; }
 .home-housing-card.compare, .housing-card.compare { border-color: rgba(255, 156, 99, .45); }
 .home-housing-card > span, .housing-card > span { color: var(--subtle); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; }
 .home-housing-card h3, .housing-card h3 { margin: 9px 0 0; font-size: 16px; letter-spacing: -.04em; }
+.home-housing-spec, .housing-spec { display: block; margin-top: 6px; color: var(--muted); font-size: 9px; line-height: 1.4; }
 .home-housing-rent, .housing-rent { display: block; margin-top: 15px; color: var(--orange); font-size: 25px; font-weight: 800; letter-spacing: -.06em; }
 .home-housing-rent small, .housing-rent small { color: var(--muted); font-size: 10px; font-weight: 500; letter-spacing: 0; }
 .home-housing-details, .housing-details { display: grid; gap: 7px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
