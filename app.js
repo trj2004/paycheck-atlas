@@ -9,6 +9,7 @@
   var mapFocusedStateCode = null;
   var mapZoom = 1;
   var latestRows = [];
+  var activeHomeHouseCategory = 'housing';
 
   var MAP_LAYOUT = {
     WA: [1, 1], ID: [2, 1], MT: [3, 1], ND: [4, 1], MN: [5, 1], WI: [6, 1], MI: [7, 1], NY: [8, 1], VT: [9, 1], NH: [10, 1], ME: [11, 1],
@@ -549,10 +550,68 @@
 
   function renderHomeHousing(scenarioA, scenarioB) {
     setText('#home-housing-label', scenarioA.housingProfile.label);
+    setText('#home-move-a', scenarioA.state.name);
+    setText('#home-move-b', scenarioB.state.name);
     $('#home-housing-cards').innerHTML = housingCardMarkup(scenarioA, 'from', 'main', true) + housingCardMarkup(scenarioB, 'to', 'compare', true);
     var rentDifference = scenarioA.housingCost - scenarioB.housingCost;
     var winner = rentDifference <= 0 ? scenarioA : scenarioB;
+    setText('#home-move-caption', 'The home stays constant. ' + winner.state.name + ' leaves ' + money(Math.abs(scenarioA.leftover - scenarioB.leftover)) + ' more monthly room under this plan.');
+    animateHomeHouseMove();
     $('#home-housing-insight').innerHTML = '<strong>' + winner.state.name + '</strong> gives this ' + scenarioA.housingProfile.label.toLowerCase() + ' a lower modeled rent. The difference is ' + money(Math.abs(rentDifference)) + ' per month before food, transportation, taxes, and the rest of the life plan are added.';
+  }
+
+  function animateHomeHouseMove() {
+    var house = $('#home-moving-house');
+    if (!house) return;
+    house.classList.remove('is-moving');
+    void house.offsetWidth;
+    house.classList.add('is-moving');
+    window.setTimeout(function () { house.classList.remove('is-moving'); }, 900);
+  }
+
+  function houseRow(result, key) {
+    return result.rows.filter(function (item) { return item.key === key; })[0] || { key: key, label: key, value: 0, className: 'other' };
+  }
+
+  function renderHomeHouse(result) {
+    if (!$('#house-lab-title')) return;
+    var roomKeys = ['housing', 'food', 'transport', 'health', 'savings'];
+    var roomLabels = { housing: 'Housing', food: 'Food', transport: 'Transport', health: 'Health care', savings: 'Savings target' };
+    var roomCopy = {
+      housing: 'Housing claims ' + percent(result.housingCost / result.takeHome) + ' of take-home pay and ' + percent(result.housingShare) + ' of essentials. Because it is the largest line in this scenario, a rent change travels directly to leftover income.',
+      food: 'Food takes ' + money(houseRow(result, 'food').value) + ' each month in this plan. Household size and the local price level move this room more than the career itself.',
+      transport: 'Transportation takes ' + money(houseRow(result, 'transport').value) + ' per month. A lower-rent state is not automatically cheaper if getting to work costs more.',
+      health: 'Health care is modeled at ' + money(houseRow(result, 'health').value) + ' per month. It is part of the basic-life plan even though it is easy to overlook in a salary comparison.',
+      savings: 'The foundation sets aside ' + money(houseRow(result, 'savings').value) + ' per month. A paycheck can cover the bills and still feel fragile if no room remains for shocks or goals.'
+    };
+    setText('#home-house-label', result.career.name + ' · ' + result.state.name);
+    setText('#home-house-take-home', money(result.takeHome) + ' / mo');
+    setText('#home-house-budget', money(result.monthlyBudget));
+    setText('#home-house-leftover', signedMoney(result.leftover));
+    var fill = $('#home-house-budget-fill');
+    if (fill) fill.style.width = clamp(result.monthlyBudget / result.takeHome * 100, 0, 100) + '%';
+    roomKeys.forEach(function (key) {
+      var row = houseRow(result, key);
+      setText('#home-room-' + key, money(row.value));
+      setText('#home-room-' + key + '-share', percent(row.value / result.monthlyBudget) + ' of plan');
+    });
+    var pressure = result.rows.filter(function (item) { return item.value > 0 && item.key !== 'savings'; }).sort(function (a, b) { return b.value - a.value; })[0] || houseRow(result, 'housing');
+    setText('#home-house-analysis-title', roomLabels[activeHomeHouseCategory] + ' enters the picture.');
+    setText('#home-house-analysis-copy', roomCopy[activeHomeHouseCategory]);
+    setText('#home-house-analysis-label', 'Largest modeled cost');
+    setText('#home-house-analysis-value', pressure.label + ' · ' + money(pressure.value));
+    setText('#home-house-analysis-note', result.leftover >= 0 ? 'After the full plan, this scenario keeps ' + money(result.leftover) + ' of monthly breathing room.' : 'After the full plan, this scenario has a ' + money(Math.abs(result.leftover)) + ' monthly gap to close.');
+    $all('.house-room').forEach(function (button) {
+      var active = button.getAttribute('data-house-category') === activeHomeHouseCategory;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    var blueprint = $('.house-blueprint');
+    if (blueprint) {
+      blueprint.classList.remove('scenario-update');
+      void blueprint.offsetWidth;
+      blueprint.classList.add('scenario-update');
+    }
   }
 
   function renderTable(result, comparison) {
@@ -725,6 +784,9 @@
     $('#home-flow').innerHTML = flow.map(function (item) {
       return '<div class="flow-segment ' + item.className + '" style="width:' + (item.value / result.monthlyBudget * 100) + '%" title="' + item.key + ': ' + money(item.value) + '"></div>';
     }).join('');
+    var largest = result.rows.filter(function (item) { return item.value > 0 && item.key !== 'savings'; }).sort(function (a, b) { return b.value - a.value; })[0];
+    setText('#home-ranking-analysis', 'Under this lens, ' + best.state.name + ' gives the strongest ratio while ' + worst.state.name + ' is tightest. The gap is driven by the interaction between local costs and the wage attached to ' + result.career.name.toLowerCase() + '.');
+    setText('#home-flow-analysis', largest.label + ' is the largest modeled pressure point at ' + money(largest.value) + ' per month. The full plan uses ' + percent(result.monthlyBudget / result.takeHome) + ' of take-home pay, leaving ' + signedMoney(result.leftover) + '.');
     renderCpiLens(result, $('#home-trend'));
   }
 
@@ -734,6 +796,7 @@
   }
 
   function renderHomeHero(scenario) {
+    setText('#home-hero-icon', scenario.career.icon || '✦');
     setText('#home-hero-role', scenario.career.name);
     setText('#home-hero-location', scenario.state.name + ' · ' + scenario.household.name);
     $('#home-hero-take-home').innerHTML = money(scenario.takeHome) + '<span>/mo</span>';
@@ -745,6 +808,12 @@
     setText('#home-hero-chip', scenario.state.code + ' · ' + signedMoney(scenario.leftover));
     var flow = $('#home-hero-flow');
     if (flow) flow.style.width = clamp(scenario.monthlyBudget / scenario.takeHome * 100, 0, 100) + '%';
+    var salaryCard = $('.salary-card');
+    if (salaryCard) {
+      salaryCard.classList.remove('scenario-update');
+      void salaryCard.offsetWidth;
+      salaryCard.classList.add('scenario-update');
+    }
   }
 
   function renderHomePassport() {
@@ -757,6 +826,7 @@
     renderHomeHero(scenarioA);
     renderHomeHousing(scenarioA, scenarioB);
     renderHomeScenario(scenarioA);
+    renderHomeHouse(scenarioA);
     setText('#home-passport-a', '');
     setText('#home-passport-b', '');
     $('#home-passport-a').innerHTML = '<small>' + scenarioA.state.name + '</small><strong>' + signedMoney(scenarioA.leftover) + ' / mo</strong>';
@@ -776,6 +846,13 @@
     $('#home-housing-select').value = 'one-bedroom';
     $all('#home-career-select, #home-state-a, #home-state-b, #home-housing-select').forEach(function (element) {
       element.addEventListener('change', renderHomePassport);
+    });
+    $all('.house-room').forEach(function (button) {
+      button.addEventListener('click', function () {
+        activeHomeHouseCategory = button.getAttribute('data-house-category');
+        var scenario = calculate({ careerId: $('#home-career-select').value, stateCode: $('#home-state-a').value, year: latestYear(), householdId: 'solo', percentileKey: 'median', modeId: 'balanced', housingId: $('#home-housing-select').value });
+        renderHomeHouse(scenario);
+      });
     });
     renderHomePassport();
   }

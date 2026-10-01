@@ -171,6 +171,79 @@ button, select { cursor: pointer; }
 .passport-result .passport-delta { color: var(--orange); font-family: ui-monospace, monospace; font-size: 12px; }
 .passport-lab .card-link { position: relative; z-index: 1; margin-top: 21px; }
 
+.house-lab { padding: 76px 0 28px; }
+.house-lab-grid { display: grid; grid-template-columns: 1.18fr .82fr; gap: 14px; align-items: stretch; }
+.house-scene, .house-analysis { min-width: 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+.house-scene { overflow: hidden; background: radial-gradient(circle at 80% 0%, rgba(116, 200, 255, .11), transparent 22rem), #0d151d; }
+.house-scene-top { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 23px 25px 17px; border-bottom: 1px solid var(--line); }
+.house-scene-top strong { display: block; margin-top: 5px; color: var(--ink); font-size: 15px; }
+.house-live-dot { display: inline-flex; align-items: center; gap: 6px; color: var(--mint); font-family: ui-monospace, monospace; font-size: 8px; letter-spacing: .1em; white-space: nowrap; }
+.house-live-dot i { width: 6px; height: 6px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 4px rgba(120, 240, 190, .1); animation: live-pulse 1.7s ease-in-out infinite; }
+.house-blueprint { position: relative; min-height: 421px; overflow: hidden; background: linear-gradient(180deg, rgba(116, 200, 255, .06), transparent 49%), repeating-linear-gradient(0deg, transparent 0 41px, rgba(116, 200, 255, .055) 42px), repeating-linear-gradient(90deg, transparent 0 41px, rgba(116, 200, 255, .055) 42px); }
+.house-blueprint::before { content: ""; position: absolute; inset: 24px; border: 1px dashed rgba(116, 200, 255, .2); border-radius: 12px; pointer-events: none; }
+.house-skyline { position: absolute; right: 12%; bottom: 91px; left: 7%; display: flex; align-items: end; gap: 8px; height: 115px; opacity: .28; }
+.house-skyline span { display: block; width: 9%; min-height: 34px; border: 1px solid rgba(116, 200, 255, .32); border-bottom: 0; background: rgba(116, 200, 255, .08); }
+.house-skyline span:nth-child(2) { height: 72%; }
+.house-skyline span:nth-child(3) { height: 48%; }
+.house-skyline span:nth-child(4) { height: 88%; }
+.house-skyline span:nth-child(5) { height: 62%; }
+.blueprint-roof { position: absolute; top: 54px; right: 16%; left: 16%; height: 86px; border: 1px solid rgba(201, 245, 106, .48); border-bottom: 0; background: linear-gradient(135deg, rgba(201, 245, 106, .12), rgba(120, 240, 190, .04)); clip-path: polygon(8% 100%, 50% 0, 92% 100%); }
+.blueprint-roof i { position: absolute; right: 50%; bottom: 16px; width: 7px; height: 7px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 18px var(--lime); }
+.blueprint-roof b { position: absolute; right: 0; bottom: 11px; left: 0; color: var(--lime); font-family: ui-monospace, monospace; font-size: 8px; letter-spacing: .16em; text-align: center; }
+.house-body { position: absolute; top: 124px; right: 17%; bottom: 78px; left: 17%; display: grid; grid-template-columns: repeat(6, 1fr); grid-template-rows: 1fr 1fr 1fr; gap: 7px; padding: 8px; border: 1px solid rgba(201, 245, 106, .35); border-radius: 10px; background: rgba(8, 14, 18, .78); box-shadow: 0 18px 50px rgba(0, 0, 0, .25); }
+.house-room { position: relative; display: flex; min-width: 0; flex-direction: column; align-items: flex-start; justify-content: center; padding: 11px; overflow: hidden; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); background: rgba(255, 255, 255, .025); text-align: left; transition: transform .2s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease; }
+.house-room:hover, .house-room:focus-visible { z-index: 2; transform: translateY(-3px); border-color: var(--ink); outline: none; box-shadow: 0 9px 18px rgba(0, 0, 0, .25); }
+.house-room.active { border-color: var(--lime); background: rgba(201, 245, 106, .12); box-shadow: inset 0 0 0 1px rgba(201, 245, 106, .12); }
+.house-room::after { content: ""; position: absolute; right: -17px; bottom: -17px; width: 54px; height: 54px; border-radius: 50%; background: var(--room-color, var(--lime)); opacity: .09; }
+.room-housing { --room-color: var(--orange); grid-column: span 3; }
+.room-food { --room-color: var(--lime); grid-column: span 3; }
+.room-transport { --room-color: var(--blue); grid-column: span 3; }
+.room-health { --room-color: var(--mint); grid-column: span 3; }
+.room-savings { --room-color: var(--violet); grid-column: 2 / span 4; }
+.room-icon { color: var(--room-color, var(--lime)); font-size: 16px; line-height: 1; }
+.room-name { margin-top: 8px; color: var(--muted); font-size: 9px; }
+.house-room strong { margin-top: 3px; color: var(--ink); font-size: 15px; letter-spacing: -.04em; }
+.house-room small { margin-top: 2px; color: var(--subtle); font-size: 8px; }
+.house-yard { position: absolute; right: 9%; bottom: 24px; left: 9%; height: 37px; border-top: 1px solid rgba(120, 240, 190, .2); }
+.house-token { position: absolute; display: grid; min-width: 63px; height: 22px; place-items: center; padding: 0 7px; border: 1px solid var(--line-strong); border-radius: 99px; color: #09100d; font-family: ui-monospace, monospace; font-size: 7px; font-weight: 900; letter-spacing: .08em; box-shadow: 0 7px 16px rgba(0, 0, 0, .25); animation: token-float 4.5s ease-in-out infinite; }
+.token-pay { top: 8px; left: 2%; background: var(--lime); }
+.token-plan { top: 12px; left: 43%; color: #09100d; background: var(--orange); animation-delay: -.9s; }
+.token-room { top: 8px; right: 2%; color: #09100d; background: var(--mint); animation-delay: -2s; }
+.house-money-track { padding: 17px 25px 22px; border-top: 1px solid var(--line); }
+.house-money-track > div:first-child, .house-money-labels { display: flex; align-items: center; justify-content: space-between; gap: 15px; color: var(--muted); font-size: 10px; }
+.house-money-track > div:first-child strong { color: var(--ink); font-size: 12px; }
+.house-money-bar { height: 8px; margin: 11px 0 9px; overflow: hidden; border-radius: 99px; background: #29343d; }
+.house-money-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--orange), var(--lime)); transition: width .65s cubic-bezier(.2, .8, .2, 1); }
+.house-money-labels { color: var(--subtle); font-size: 9px; }
+.house-money-labels b { margin-left: 4px; color: var(--ink); font-family: ui-monospace, monospace; }
+.house-money-labels span:last-child b { color: var(--lime); }
+.house-analysis { padding: 27px; background: radial-gradient(circle at 100% 0%, rgba(201, 245, 106, .11), transparent 17rem), var(--panel); }
+.house-analysis h3 { max-width: 340px; margin: 11px 0 0; color: var(--ink); font-size: clamp(25px, 3vw, 39px); line-height: 1.02; letter-spacing: -.06em; }
+.house-analysis > p { max-width: 390px; margin: 20px 0 0; color: var(--muted); font-size: 13px; line-height: 1.75; }
+.house-analysis-stat { margin-top: 31px; padding: 16px; border: 1px solid rgba(201, 245, 106, .25); border-radius: 12px; background: rgba(201, 245, 106, .05); }
+.house-analysis-stat span, .house-analysis-stat strong, .house-analysis-stat small { display: block; }
+.house-analysis-stat span { color: var(--subtle); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; }
+.house-analysis-stat strong { margin-top: 8px; color: var(--lime); font-size: 21px; letter-spacing: -.05em; }
+.house-analysis-stat small { margin-top: 5px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+.house-reading-note { margin-top: 27px; padding-top: 18px; border-top: 1px solid var(--line); }
+.house-reading-note span { color: var(--mint); font-family: ui-monospace, monospace; font-size: 9px; letter-spacing: .11em; }
+.house-reading-note p { margin: 8px 0 0; color: var(--muted); font-size: 11px; line-height: 1.65; }
+.salary-card.scenario-update { animation: scenario-pulse .65s ease both; }
+.house-blueprint.scenario-update { animation: blueprint-pulse .65s ease both; }
+.feature-analysis { min-height: 42px; margin: 15px 0 0 !important; padding: 11px 13px; border-left: 2px solid var(--mint); color: var(--muted) !important; background: rgba(120, 240, 190, .045); font-size: 11px !important; line-height: 1.55 !important; }
+
+.home-move-scene { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 15px; margin-top: 21px; }
+.move-stop { display: flex; align-items: center; gap: 7px; color: var(--lime); font-family: ui-monospace, monospace; font-size: 9px; font-weight: 800; }
+.move-stop-end { color: var(--orange); }
+.move-stop i { display: block; width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 12px currentColor; }
+.move-track { position: relative; height: 30px; border-top: 1px dashed rgba(201, 245, 106, .45); }
+.move-track::before, .move-track::after { content: ""; position: absolute; top: -4px; width: 7px; height: 7px; border: 1px solid var(--line-strong); border-radius: 50%; background: var(--panel); }
+.move-track::before { left: 0; }
+.move-track::after { right: 0; }
+#home-moving-house { position: absolute; top: -15px; left: 0; display: grid; width: 31px; height: 31px; place-items: center; border: 1px solid var(--lime); border-radius: 9px; color: #09100d; background: var(--lime); font-size: 17px; box-shadow: 0 0 20px rgba(201, 245, 106, .3); }
+#home-moving-house.is-moving { animation: travel-house .8s cubic-bezier(.2, .8, .2, 1) forwards; }
+.home-move-caption { margin: 2px 0 0; color: var(--subtle); font-size: 10px; text-align: center; }
+
 .home-housing-section { padding: 76px 0 28px; }
 .home-housing-board { overflow: hidden; padding: 25px; border: 1px solid rgba(255, 156, 99, .28); border-radius: var(--radius); background: radial-gradient(circle at 93% 12%, rgba(255, 156, 99, .11), transparent 18rem), linear-gradient(135deg, #191c24, #10161e 75%); }
 .home-housing-top { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
@@ -477,6 +550,34 @@ dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
 .formula-card strong { margin-top: 5px; color: var(--lime); font-size: 14px; }
 .dialog-small { margin: 20px 0 0; color: var(--subtle); font-size: 10px; line-height: 1.6; }
 
+@keyframes live-pulse {
+  0%, 100% { opacity: .55; transform: scale(.85); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+@keyframes token-float {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-6px) rotate(2deg); }
+}
+@keyframes travel-house {
+  0% { left: 0; transform: rotate(-4deg) scale(.9); }
+  45% { transform: translateY(-11px) rotate(4deg) scale(1.06); }
+  100% { left: calc(100% - 31px); transform: rotate(0) scale(1); }
+}
+@keyframes scenario-pulse {
+  0% { opacity: .65; transform: rotate(-3deg) scale(.98); }
+  60% { opacity: 1; transform: rotate(-3deg) scale(1.015); }
+  100% { opacity: 1; transform: rotate(-3deg) scale(1); }
+}
+@keyframes blueprint-pulse {
+  0% { opacity: .72; box-shadow: inset 0 0 0 0 rgba(201, 245, 106, 0); }
+  55% { opacity: 1; box-shadow: inset 0 0 42px rgba(201, 245, 106, .12); }
+  100% { opacity: 1; box-shadow: inset 0 0 0 rgba(201, 245, 106, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
 @media (max-width: 980px) {
   .hero { gap: 35px; }
   .hero h1 { font-size: clamp(48px, 8vw, 70px); }
@@ -493,6 +594,7 @@ dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
   .dashboard-grid, .chart-grid, .lower-grid { grid-template-columns: 1fr; }
   .metric-grid { grid-template-columns: repeat(2, 1fr); }
   .model-grid { grid-template-columns: repeat(2, 1fr); }
+  .house-lab-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 700px) {
@@ -524,6 +626,17 @@ dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
   .metric-card { min-height: 133px; padding: 15px; }
   .metric-card .metric-value { font-size: 24px; }
   .feature-card { padding: 20px; }
+  .house-lab { padding-top: 58px; }
+  .house-scene-top { display: block; }
+  .house-live-dot { margin-top: 12px; }
+  .house-blueprint { min-height: 390px; }
+  .house-body { right: 9%; left: 9%; }
+  .blueprint-roof { right: 8%; left: 8%; }
+  .house-analysis { padding: 21px; }
+  .house-analysis h3 { font-size: 31px; }
+  .house-move-scene { gap: 8px; }
+  .move-stop { display: block; text-align: center; }
+  .move-stop i { margin: 0 auto 5px; }
   .home-housing-board { padding: 18px; }
   .home-housing-top { display: block; }
   .home-housing-top strong { display: block; margin-top: 9px; }
