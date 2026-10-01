@@ -62,12 +62,16 @@
     return list.filter(function (item) { return item[key] === value; })[0] || list[0];
   }
 
+  function latestYear() {
+    return DATA.years[DATA.years.length - 1];
+  }
+
   function costYearFactor(year) {
-    return 1 + ((2024 - Number(year)) * 0.028);
+    return 1 + ((latestYear() - Number(year)) * 0.028);
   }
 
   function cpiFactor(year, category) {
-    var current = findBy(DATA.cpi || [], 'year', 2024);
+    var current = findBy(DATA.cpi || [], 'year', latestYear());
     var point = findBy(DATA.cpi || [], 'year', Number(year));
     if (!current || !point || !current.all) return costYearFactor(year);
     var currentValue = current[category] || current.all;
@@ -76,7 +80,7 @@
   }
 
   function wageYearFactor(year) {
-    return 1 - ((2024 - Number(year)) * 0.022);
+    return 1 - ((latestYear() - Number(year)) * 0.022);
   }
 
   function calculate(options) {
@@ -86,7 +90,7 @@
     var mode = findBy(DATA.modes, 'id', options.modeId || 'balanced');
     var percentile = DATA.percentiles[options.percentileKey || 'median'];
     var housingProfile = findBy(DATA.housing || [], 'id', options.housingId || 'one-bedroom');
-    var year = Number(options.year || 2024);
+    var year = Number(options.year || latestYear());
     var priceFactor = state.rpp / 100;
     var yearCosts = cpiFactor(year, 'all');
     var salary = Number(options.customSalary) > 0
@@ -493,7 +497,15 @@
       ? 'The basic-life plan rose ' + budgetChange + '% while the paycheck rose ' + payChange + '%—purchasing power tightened.'
       : 'The paycheck rose ' + payChange + '% while the basic-life plan rose ' + budgetChange + '%—purchasing power improved.';
     var insightSelector = target.id === 'dashboard-trend' ? '#dashboard-trend-insight' : '#home-trend-insight';
-    setText(insightSelector, insight + ' Both lines are indexed to 2018 = 100 using prototype CPI-style inputs.');
+    var startYear = DATA.years[0];
+    setText(insightSelector, insight + ' Both lines are indexed to ' + startYear + ' = 100 using prototype CPI-style inputs.');
+    if (target.id === 'dashboard-trend') {
+      setText('#trend-start', startYear + ' = 100');
+      setText('#trend-end', String(latestYear()));
+    } else {
+      setText('#home-trend-start', startYear + ' = 100');
+      setText('#home-trend-end', String(latestYear()));
+    }
   }
 
   function housingCardMarkup(item, label, className, compact) {
@@ -611,7 +623,7 @@
     $('#career-select').value = 'nurse';
     $('#state-select').value = 'TX';
     $('#compare-state-select').value = 'CA';
-    $('#year-select').value = '2024';
+    $('#year-select').value = String(latestYear());
     $('#household-select').value = 'solo';
     $('#housing-select').value = 'one-bedroom';
     $('#percentile-select').value = 'median';
@@ -624,6 +636,9 @@
     $('#map-zoom-out').addEventListener('click', function () { setMapZoom(mapZoom - 0.15); });
     $('#map-zoom-reset').addEventListener('click', function () { setMapZoom(1); });
     $('#map-zoom-in').addEventListener('click', function () { setMapZoom(mapZoom + 0.15); });
+    $('#map-year-scrubber').min = String(DATA.years[0]);
+    $('#map-year-scrubber').max = String(latestYear());
+    $('#map-year-scrubber').value = String(latestYear());
     $('#map-year-scrubber').addEventListener('input', function () {
       $('#year-select').value = $('#map-year-scrubber').value;
       renderDashboard();
@@ -652,7 +667,7 @@
       $('#career-select').value = 'nurse';
       $('#state-select').value = 'TX';
       $('#compare-state-select').value = 'CA';
-      $('#year-select').value = '2024';
+      $('#year-select').value = String(latestYear());
       $('#household-select').value = 'solo';
       $('#housing-select').value = 'one-bedroom';
       $('#percentile-select').value = 'median';
@@ -673,21 +688,21 @@
     renderDashboard();
   }
 
-  function renderHome() {
-    var result = calculate({ careerId: 'nurse', stateCode: 'TX', year: 2024, householdId: 'solo', percentileKey: 'median', modeId: 'balanced' });
+  function renderHomeScenario(result) {
     var values = DATA.states.map(function (state) {
-      return calculate({ careerId: 'nurse', stateCode: state.code, year: 2024, householdId: 'solo', percentileKey: 'median', modeId: 'balanced' });
+      return calculate({ careerId: result.career.id, stateCode: state.code, year: result.year, householdId: result.household.id, percentileKey: result.percentileKey, modeId: result.mode.id, housingId: result.housingId, customSalary: result.customSalary || '' });
     });
     var best = values.slice().sort(function (a, b) { return b.ratio - a.ratio; })[0];
     var worst = values.slice().sort(function (a, b) { return a.ratio - b.ratio; })[0];
     var spread = best.leftover - worst.leftover;
+    setText('#home-tradeoff-context', result.career.name + ' · ' + result.household.name + ' · ' + result.housingProfile.label + ' · ' + result.year + ' · all states');
     setText('#home-spread-value', money(spread));
-    setText('#home-spread-label', best.state.name + ' leaves ' + money(spread) + ' more each month than ' + worst.state.name + ' under the same registered nurse, solo renter scenario.');
+    setText('#home-spread-label', best.state.name + ' leaves ' + money(spread) + ' more each month than ' + worst.state.name + ' under the same ' + result.career.name.toLowerCase() + ', ' + result.household.name.toLowerCase() + ', and ' + result.housingProfile.label.toLowerCase() + ' scenario.');
     $('#home-metrics').innerHTML = [
-      ['Best modeled ratio', ratio(best.ratio), best.state.name + ' · registered nurse'],
+      ['Best modeled ratio', ratio(best.ratio), best.state.name + ' · ' + result.career.name],
       ['Breathing-room spread', money(spread), 'best vs. tightest state'],
-      ['Housing share', percent(result.housingShare), 'of Texas essentials in this scenario'],
-      ['States in prototype', String(DATA.states.length), 'same career and household lens']
+      ['Housing share', percent(result.housingShare), 'of ' + result.state.name + ' essentials in this scenario'],
+      ['States in prototype', String(DATA.states.length), 'same lens across all states']
     ].map(function (card) {
       return '<article class="metric-card"><span class="metric-label">' + card[0] + '</span><strong class="metric-value">' + card[1] + '</strong><span class="metric-note">' + card[2] + '</span></article>';
     }).join('');
@@ -703,6 +718,11 @@
       return '<div class="flow-segment ' + item.className + '" style="width:' + (item.value / result.monthlyBudget * 100) + '%" title="' + item.key + ': ' + money(item.value) + '"></div>';
     }).join('');
     renderCpiLens(result, $('#home-trend'));
+  }
+
+  function renderHome() {
+    var result = calculate({ careerId: 'nurse', stateCode: 'TX', year: latestYear(), householdId: 'solo', percentileKey: 'median', modeId: 'balanced', housingId: 'one-bedroom' });
+    renderHomeScenario(result);
   }
 
   function renderHomeHero(scenario) {
@@ -724,10 +744,11 @@
     var stateA = $('#home-state-a').value;
     var stateB = $('#home-state-b').value;
     var housingId = $('#home-housing-select').value;
-    var scenarioA = calculate({ careerId: careerId, stateCode: stateA, year: 2024, householdId: 'solo', percentileKey: 'median', modeId: 'balanced', housingId: housingId });
-    var scenarioB = calculate({ careerId: careerId, stateCode: stateB, year: 2024, householdId: 'solo', percentileKey: 'median', modeId: 'balanced', housingId: housingId });
+    var scenarioA = calculate({ careerId: careerId, stateCode: stateA, year: latestYear(), householdId: 'solo', percentileKey: 'median', modeId: 'balanced', housingId: housingId });
+    var scenarioB = calculate({ careerId: careerId, stateCode: stateB, year: latestYear(), householdId: 'solo', percentileKey: 'median', modeId: 'balanced', housingId: housingId });
     renderHomeHero(scenarioA);
     renderHomeHousing(scenarioA, scenarioB);
+    renderHomeScenario(scenarioA);
     setText('#home-passport-a', '');
     setText('#home-passport-b', '');
     $('#home-passport-a').innerHTML = '<small>' + scenarioA.state.name + '</small><strong>' + signedMoney(scenarioA.leftover) + ' / mo</strong>';

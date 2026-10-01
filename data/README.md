@@ -4,7 +4,7 @@ The source-backed dataset will use a long, pivot-friendly grain. The core panel 
 
 > one occupation × one state × one annual survey year
 
-The housing extension adds a standardized home benchmark (bedroom count and square-footage band) so the same home can be compared across locations without changing the rest of the scenario. The inflation extension adds CPI category indexes so the dashboard can compare paycheck growth with the cost of a basic-life basket over time.
+The housing extension adds a standardized home benchmark (bedroom count and square-footage band) so the same home can be compared across locations without changing the rest of the scenario. The inflation extension adds CPI category indexes so the dashboard can compare paycheck growth with the cost of a basic-life basket over a ten-year panel.
 
 That grain is intentionally long and pivot-friendly. It supports questions such as:
 

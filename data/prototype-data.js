@@ -1,12 +1,15 @@
 window.PAYCHECK_ATLAS = {
-  years: [2018, 2019, 2020, 2021, 2022, 2023, 2024],
+  years: [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
   cpi: [
-    { year: 2018, all: 100.0, housing: 100.0, food: 100.0, transport: 100.0, health: 100.0, utilities: 100.0, other: 100.0 },
-    { year: 2019, all: 101.8, housing: 102.4, food: 101.9, transport: 101.2, health: 102.4, utilities: 102.0, other: 101.6 },
-    { year: 2020, all: 103.2, housing: 104.2, food: 104.0, transport: 98.5, health: 103.8, utilities: 103.5, other: 102.8 },
-    { year: 2021, all: 106.8, housing: 106.0, food: 107.5, transport: 110.5, health: 105.5, utilities: 106.7, other: 106.2 },
-    { year: 2022, all: 115.2, housing: 111.5, food: 116.0, transport: 126.0, health: 110.8, utilities: 116.8, other: 114.2 },
-    { year: 2023, all: 119.4, housing: 116.3, food: 121.1, transport: 124.0, health: 114.2, utilities: 121.7, other: 118.6 },
+    { year: 2015, all: 88.9, housing: 91.2, food: 87.6, transport: 90.8, health: 90.5, utilities: 89.8, other: 89.6 },
+    { year: 2016, all: 90.3, housing: 93.0, food: 89.0, transport: 91.2, health: 92.0, utilities: 91.4, other: 91.2 },
+    { year: 2017, all: 92.2, housing: 95.0, food: 91.3, transport: 93.8, health: 94.2, utilities: 93.0, other: 93.0 },
+    { year: 2018, all: 94.4, housing: 97.2, food: 93.8, transport: 95.9, health: 96.4, utilities: 95.2, other: 95.0 },
+    { year: 2019, all: 96.1, housing: 99.0, food: 95.6, transport: 97.1, health: 98.5, utilities: 97.2, other: 96.6 },
+    { year: 2020, all: 97.5, housing: 100.8, food: 97.6, transport: 94.5, health: 99.9, utilities: 98.7, other: 97.7 },
+    { year: 2021, all: 100.8, housing: 103.0, food: 101.0, transport: 105.9, health: 102.0, utilities: 102.0, other: 100.7 },
+    { year: 2022, all: 108.8, housing: 108.4, food: 109.2, transport: 120.9, health: 107.1, utilities: 111.5, other: 108.0 },
+    { year: 2023, all: 116.2, housing: 113.1, food: 115.0, transport: 119.0, health: 110.4, utilities: 117.1, other: 114.8 },
     { year: 2024, all: 122.5, housing: 119.8, food: 124.4, transport: 126.8, health: 117.5, utilities: 125.1, other: 121.8 }
   ],
   housing: [

@@ -10,7 +10,7 @@ The final dataset will use annual occupation wages, regional price levels, CPI c
 
 > How does location affect the purchasing power of a full-time salary?
 
-The prototype now also demonstrates a second lens: whether a paycheck has kept up with the cost of a basic life over time, and what the same bedroom/square-footage housing benchmark costs in different states.
+The prototype now also demonstrates a second lens: whether a paycheck has kept up with the cost of a basic life over a ten-year window (2015–2024), and what the same bedroom/square-footage housing benchmark costs in different states.
 
 ## Files
 
@@ -29,7 +29,7 @@ Open `index.html` for the report homepage and `dashboard.html` for the separate 
 
 ## Final data shape
 
-The source-backed panel is designed at one occupation × state × year per row. Seven annual periods across roughly 50 states and hundreds of occupations should provide far more than the 50,000-row class requirement while remaining straightforward to pivot.
+The source-backed panel is designed at one occupation × state × year per row. Ten annual periods across roughly 50 states and hundreds of occupations should provide far more than the 50,000-row class requirement while remaining straightforward to pivot.
 
 Run the pipeline from the `fda-python` repository root with `uv run python ..\paycheck-atlas\scripts\build_dataset.py`. The script caches raw downloads, joins the sources, checks the required row count/group/time coverage, and writes processed CSV/Parquet outputs. A BEA API key is required for the RPP fields.
 

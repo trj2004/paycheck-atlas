@@ -127,6 +127,15 @@ button, select { cursor: pointer; }
 .signal-note { display: flex; align-items: center; justify-content: flex-end; gap: 15px; color: var(--muted); font-size: 12px; line-height: 1.6; text-align: left; }
 .signal-note em { color: var(--lime); font-style: normal; }
 .signal-line { width: 55px; height: 1px; background: var(--lime); }
+.scope-strip { display: grid; grid-template-columns: 1.25fr .75fr; gap: 30px; align-items: center; margin-top: 18px; padding: 19px 22px; border: 1px solid rgba(201, 245, 106, .2); border-radius: 13px; background: rgba(201, 245, 106, .035); }
+.scope-strip strong, .scope-strip p { display: block; }
+.scope-strip strong { margin-top: 5px; color: var(--ink); font-size: 16px; letter-spacing: -.03em; }
+.scope-strip p { max-width: 540px; margin: 8px 0 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
+.scope-points { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.scope-points span { padding-left: 12px; border-left: 1px solid var(--line-strong); }
+.scope-points b, .scope-points small { display: block; }
+.scope-points b { color: var(--lime); font-size: 15px; }
+.scope-points small { margin-top: 3px; color: var(--subtle); font-size: 9px; line-height: 1.35; }
 
 .passport-section { display: grid; grid-template-columns: .72fr 1.28fr; gap: 65px; align-items: center; padding: 92px 0 50px; }
 .passport-intro h2 { margin: 0; font-size: clamp(35px, 4vw, 55px); line-height: .99; letter-spacing: -.07em; }
@@ -205,6 +214,11 @@ button, select { cursor: pointer; }
 .reading-guide strong, .reading-guide p { display: block; }
 .reading-guide strong { margin-top: 14px; font-size: 14px; letter-spacing: -.02em; }
 .reading-guide p { margin: 10px 0 0; color: var(--muted); font-size: 11px; line-height: 1.65; }
+.definition-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 12px; }
+.definition-grid > div { min-height: 145px; padding: 20px; border: 1px solid rgba(116, 200, 255, .2); border-radius: 14px; background: rgba(116, 200, 255, .045); }
+.definition-grid strong, .definition-grid p { display: block; }
+.definition-grid strong { margin-top: 12px; color: var(--ink); font-size: 14px; letter-spacing: -.02em; }
+.definition-grid p { margin: 9px 0 0; color: var(--muted); font-size: 11px; line-height: 1.65; }
 
 .section { padding: 112px 0; }
 .section-dark { max-width: 1440px; padding: 112px 0; background: linear-gradient(120deg, #101a20, #0c1218 80%); }
@@ -244,6 +258,7 @@ button, select { cursor: pointer; }
 .feature-footnote { margin-top: 25px !important; color: var(--subtle) !important; font-size: 11px !important; }
 
 .insight-grid { display: grid; grid-template-columns: .76fr 1.24fr; gap: 50px; align-items: center; }
+.tradeoff-context { display: block; margin-bottom: 19px; color: var(--orange); font-family: ui-monospace, monospace; font-size: 9px; letter-spacing: .1em; line-height: 1.5; text-transform: uppercase; }
 .big-number { display: block; color: var(--lime); font-size: clamp(68px, 9vw, 112px); font-weight: 800; line-height: .9; letter-spacing: -.09em; }
 .big-label { max-width: 270px; margin: 23px 0 35px; color: var(--muted); font-size: 13px; line-height: 1.7; }
 .quote-card { max-width: 300px; padding: 18px 20px; border-left: 2px solid var(--lime); background: rgba(255, 255, 255, .025); }
@@ -465,9 +480,11 @@ dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
   .hero { gap: 35px; }
   .hero h1 { font-size: clamp(48px, 8vw, 70px); }
   .passport-section { grid-template-columns: 1fr; gap: 35px; }
+  .scope-strip { grid-template-columns: 1fr; }
   .home-housing-cards, .housing-cards { grid-template-columns: repeat(2, 1fr); }
   .equation-line { grid-template-columns: 1fr 1fr; }
   .equation-arrow { display: none; }
+  .definition-grid { grid-template-columns: 1fr; }
   .reading-guide { grid-template-columns: 1fr; }
   .control-grid { grid-template-columns: repeat(2, 1fr); }
   .control-wide { grid-column: span 1; }
@@ -497,6 +514,8 @@ dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
   .chip-right { right: -1%; }
   .signal-grid, .feature-grid, .insight-grid { grid-template-columns: 1fr; }
   .signal-note { justify-content: flex-start; }
+  .scope-strip { margin-top: 12px; padding: 17px; }
+  .scope-points { gap: 7px; }
   .section, .section-dark { padding: 78px 0; }
   .section-heading { display: block; }
   .section-intro { margin-top: 20px; }
