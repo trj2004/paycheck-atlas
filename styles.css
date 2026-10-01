@@ -97,7 +97,8 @@ button, select { cursor: pointer; }
 .tiny-label { margin: 0; color: var(--subtle); font-size: 9px; }
 .status-pill, .result-badge { padding: 6px 9px; border-radius: 99px; color: var(--lime); background: rgba(201, 245, 106, .09); font-size: 9px; font-weight: 900; letter-spacing: .1em; }
 .salary-role { justify-content: flex-start; gap: 13px; margin: 27px 0 18px; }
-.role-icon { display: grid; width: 37px; height: 37px; place-items: center; border-radius: 11px; color: #0b1110; background: var(--lime); font-weight: 900; }
+.role-icon { display: grid; width: 37px; height: 37px; place-items: center; overflow: hidden; border-radius: 11px; color: #0b1110; background: var(--lime); font-weight: 900; }
+.role-icon .career-icon-svg { width: 28px; height: 28px; }
 .salary-role strong, .salary-role small { display: block; }
 .salary-role strong { font-size: 15px; }
 .salary-role small { margin-top: 3px; color: var(--muted); font-size: 11px; }
@@ -224,14 +225,16 @@ button, select { cursor: pointer; }
 .career-card:hover, .career-card:focus-visible { transform: translateY(-2px); border-color: var(--mint); outline: none; }
 .career-card.active { border-color: var(--lime); background: rgba(201, 245, 106, .09); }
 .career-card-icon, .career-card strong, .career-card small, .career-card b { display: block; }
-.career-card-icon { color: var(--lime); font-size: 15px; font-weight: 900; }
+.career-card-icon { display: grid; width: 35px; height: 35px; place-items: center; border: 1px solid rgba(201, 245, 106, .25); border-radius: 9px; color: var(--lime); background: rgba(201, 245, 106, .07); font-size: 15px; font-weight: 900; transition: color .18s ease, background .18s ease, transform .18s ease; }
+.career-card:hover .career-card-icon, .career-card:focus-visible .career-card-icon, .career-card.active .career-card-icon { color: #0b1110; background: var(--lime); transform: rotate(-3deg) scale(1.04); }
+.career-icon-svg { display: block; width: 29px; height: 29px; overflow: visible; }
 .career-card strong { margin-top: 7px; overflow: hidden; color: var(--ink); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .career-card small { margin-top: 2px; overflow: hidden; color: var(--subtle); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
 .career-card b { margin-top: 8px; color: var(--lime); font-family: ui-monospace, monospace; font-size: 10px; }
 .career-character { width: 158px; height: 112px; flex: 0 0 158px; place-items: center; border-radius: 15px; overflow: visible; }
 .career-character .character-glow { width: 74px; height: 74px; filter: blur(22px); opacity: .28; }
 .career-visual { position: relative; z-index: 1; width: 100%; height: 100%; color: var(--character-color); }
-.career-visual svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.career-visual svg { display: block; width: 100%; height: 100%; overflow: visible; transform: scale(1.08); transform-origin: center; }
 
 .house-finance-strip { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 19px 25px 0; color: var(--muted); font-family: ui-monospace, monospace; font-size: 8px; letter-spacing: .08em; }
 .house-finance-strip span, .house-finance-strip strong { display: inline-flex; align-items: center; gap: 6px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 6px; background: rgba(255, 255, 255, .025); }
@@ -276,6 +279,23 @@ button, select { cursor: pointer; }
 .blueprint-door-knob { fill: var(--lime); }
 .blueprint-window { fill: none; stroke: var(--blue); stroke-width: 4; opacity: .9; }
 .blueprint-driveway { fill: rgba(116, 200, 255, .08); stroke: var(--blue); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.blueprint-architecture { pointer-events: none; }
+.blueprint-architecture path { fill: none; stroke: rgba(116, 200, 255, .7); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.blueprint-architecture .blueprint-roof-line { stroke: rgba(201, 245, 106, .9); stroke-width: 3; }
+.blueprint-architecture .blueprint-wall-edge { stroke: rgba(246, 247, 249, .32); stroke-width: 1; }
+.blueprint-architecture .blueprint-door-swing { stroke: var(--orange); stroke-dasharray: 4 3; }
+.blueprint-architecture .blueprint-garage-door { stroke: var(--blue); stroke-width: 1; opacity: .8; }
+.blueprint-architecture .blueprint-window-cross { stroke: var(--blue); stroke-width: 2; }
+.blueprint-architecture .blueprint-porch { fill: rgba(201, 245, 106, .08); stroke: var(--lime); }
+.blueprint-furniture { pointer-events: none; fill: rgba(246, 247, 249, .055); stroke: color-mix(in srgb, var(--room-color) 80%, white); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; opacity: .72; }
+.blueprint-furniture .blueprint-pillow { fill: color-mix(in srgb, var(--room-color) 20%, transparent); }
+.blueprint-rent-badge { pointer-events: none; }
+.blueprint-rent-badge rect { fill: rgba(8, 14, 18, .94); stroke: var(--orange); stroke-width: 2; filter: drop-shadow(0 0 6px rgba(255, 156, 99, .2)); }
+.blueprint-rent-badge { cursor: pointer; outline: none; pointer-events: auto; }
+.blueprint-rent-badge:hover rect, .blueprint-rent-badge:focus rect, .blueprint-rent-badge.active rect { stroke-width: 3; filter: drop-shadow(0 0 10px rgba(255, 156, 99, .42)); }
+.blueprint-rent-label { fill: var(--orange); font-family: ui-monospace, monospace; font-size: 9px; font-weight: 900; letter-spacing: .13em; }
+.blueprint-rent-value { fill: var(--ink); font-family: ui-monospace, monospace; font-size: 16px; font-weight: 900; letter-spacing: -.02em; }
+.blueprint-rent-share { fill: var(--muted); font-family: Inter, ui-sans-serif, sans-serif; font-size: 9px; }
 .blueprint-front-label { fill: var(--lime); font-family: ui-monospace, monospace; font-size: 8px; letter-spacing: .13em; }
 .blueprint-room { --room-color: var(--blue); cursor: pointer; outline: none; }
 .blueprint-room[data-house-category="housing"] { --room-color: var(--orange); }
@@ -386,7 +406,7 @@ button, select { cursor: pointer; }
    the rooms hold monthly costs, and the door shows what survives the plan. */
 .salary-card-finding { margin: 17px 0 0; padding-top: 13px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; line-height: 1.55; }
 .career-arrival { display: flex; align-items: center; gap: 16px; margin: 18px 25px 0; padding: 12px 14px; border: 1px solid rgba(120, 240, 190, .22); border-radius: 13px; background: linear-gradient(90deg, rgba(120, 240, 190, .07), rgba(201, 245, 106, .03)); }
-.career-character { --character-color: var(--mint); position: relative; display: grid; width: 66px; height: 66px; flex: 0 0 66px; place-items: center; border: 1px solid color-mix(in srgb, var(--character-color) 60%, transparent); border-radius: 18px; background: radial-gradient(circle at 50% 25%, color-mix(in srgb, var(--character-color) 27%, transparent), transparent 64%), #0b151a; overflow: hidden; }
+.career-character { --character-color: var(--mint); position: relative; display: grid; width: 92px; height: 82px; flex: 0 0 92px; place-items: center; border: 1px solid color-mix(in srgb, var(--character-color) 60%, transparent); border-radius: 20px; background: radial-gradient(circle at 50% 25%, color-mix(in srgb, var(--character-color) 27%, transparent), transparent 64%), #0b151a; overflow: hidden; }
 .career-character[data-career-id="nurse"] { --character-color: var(--mint); }
 .career-character[data-career-id="developer"] { --character-color: var(--blue); }
 .career-character[data-career-id="teacher"] { --character-color: var(--violet); }
@@ -405,7 +425,8 @@ button, select { cursor: pointer; }
 .career-arrival-copy span { color: var(--character-color); font-family: ui-monospace, monospace; font-size: 8px; letter-spacing: .1em; }
 .career-arrival-copy strong { margin-top: 4px; overflow: hidden; color: var(--ink); font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
 .career-arrival-copy small { margin-top: 3px; color: var(--muted); font-size: 10px; }
-.career-prop { display: grid; width: 37px; height: 37px; flex: 0 0 37px; margin-left: auto; place-items: center; border: 1px solid rgba(201, 245, 106, .35); border-radius: 11px; color: var(--lime); background: rgba(201, 245, 106, .08); font-size: 14px; font-weight: 900; animation: prop-float 2.7s ease-in-out infinite; }
+.career-prop { display: grid; width: 42px; height: 42px; flex: 0 0 42px; margin-left: auto; place-items: center; border: 1px solid rgba(201, 245, 106, .35); border-radius: 11px; color: var(--lime); background: rgba(201, 245, 106, .08); font-size: 14px; font-weight: 900; animation: prop-float 2.7s ease-in-out infinite; }
+.career-prop .career-icon-svg { width: 30px; height: 30px; }
 .career-arrival.scenario-update { animation: arrival-in .55s ease both; }
 .budget-inflow { display: grid; grid-template-columns: auto auto 1fr 27px; align-items: center; gap: 12px; margin: 18px 25px 0; color: var(--muted); font-size: 8px; letter-spacing: .1em; }
 .budget-inflow strong { color: var(--ink); font-family: ui-monospace, monospace; font-size: 12px; letter-spacing: 0; }
@@ -861,7 +882,7 @@ dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
   .house-scene-top { display: block; }
   .house-live-dot { margin-top: 12px; }
   .career-arrival { margin-inline: 18px; }
-  .career-character { width: 118px; height: 92px; flex-basis: 118px; }
+  .career-character { width: 84px; height: 76px; flex-basis: 84px; }
   .career-deck-head { display: block; }
   .career-deck-head > span:last-child { display: block; margin-top: 5px; }
   .career-deck { grid-template-columns: repeat(2, 1fr); }

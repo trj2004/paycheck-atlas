@@ -602,6 +602,21 @@
     return result.rows.filter(function (item) { return item.key === key; })[0] || { key: key, label: key, value: 0, className: 'other' };
   }
 
+  function careerIconMarkup(career) {
+    var icons = {
+      nurse: '<circle cx="32" cy="15" r="7" fill="none" stroke="currentColor" stroke-width="2.5"></circle><path d="M19 47 C19 36 24 28 32 28 C40 28 45 36 45 47" fill="currentColor" opacity=".85"></path><path d="M25 38 C25 48 39 48 39 38" fill="none" stroke="#091219" stroke-width="2"></path><circle cx="49" cy="18" r="10" fill="none" stroke="currentColor" stroke-width="2"></circle><path d="M44 18 H54 M49 13 V23" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"></path>',
+      developer: '<rect x="11" y="12" width="42" height="29" rx="4" fill="none" stroke="currentColor" stroke-width="2.5"></rect><path d="M7 48 H57 L52 53 H12 Z" fill="currentColor" opacity=".85"></path><path d="M24 24 L19 29 L24 34 M40 24 L45 29 L40 34 M35 22 L29 36" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>',
+      teacher: '<rect x="8" y="10" width="47" height="31" rx="3" fill="none" stroke="currentColor" stroke-width="2.5"></rect><text x="18" y="32" fill="currentColor" font-size="16" font-family="monospace" font-weight="900">ABC</text><path d="M38 46 L54 55 M38 46 L43 55" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"></path><path d="M14 51 H34" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"></path>',
+      analyst: '<path d="M10 51 H55" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"></path><path d="M17 47 V34 M28 47 V25 M39 47 V30 M50 47 V17" stroke="currentColor" stroke-width="6" stroke-linecap="round"></path><path d="M15 19 L25 14 L35 20 L49 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="49" cy="10" r="3" fill="#091219" stroke="currentColor" stroke-width="2"></circle>',
+      electrician: '<path d="M12 22 Q32 4 52 22 V29 H12 Z" fill="currentColor" opacity=".85"></path><path d="M32 19 L24 35 H31 L27 52 L43 31 H35 Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"></path><circle cx="49" cy="47" r="8" fill="none" stroke="currentColor" stroke-width="2.5"></circle><path d="M49 43 V51 M45 47 H53" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>',
+      mechanic: '<circle cx="32" cy="31" r="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="4 3"></circle><circle cx="32" cy="31" r="6" fill="none" stroke="currentColor" stroke-width="2.5"></circle><path d="M12 15 L21 24 M18 12 L24 18" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path><path d="M43 42 L56 55" stroke="currentColor" stroke-width="5" stroke-linecap="round"></path><path d="M47 39 L53 33 L58 38 L52 44" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"></path>',
+      retail: '<path d="M14 24 H50 L54 53 H10 Z" fill="currentColor" opacity=".82"></path><path d="M21 24 C21 10 43 10 43 24" fill="none" stroke="currentColor" stroke-width="2.5"></path><path d="M22 35 H42 M26 42 H38" stroke="#091219" stroke-width="2" stroke-linecap="round"></path><path d="M45 13 L55 8 L58 18 Z" fill="none" stroke="currentColor" stroke-width="2"></path>',
+      designer: '<path d="M13 42 C8 27 19 13 34 13 C48 13 57 23 51 38 C45 52 19 56 13 42 Z" fill="none" stroke="currentColor" stroke-width="2.5"></path><circle cx="23" cy="27" r="3" fill="currentColor"></circle><circle cx="33" cy="21" r="3" fill="currentColor"></circle><circle cx="43" cy="27" r="3" fill="currentColor"></circle><path d="M36 46 L53 29 M50 27 L56 33" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>',
+      fallback: '<circle cx="32" cy="32" r="20" fill="none" stroke="currentColor" stroke-width="2.5"></circle><path d="M22 32 H42 M32 22 V42" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"></path>'
+    };
+    return '<svg class="career-icon-svg" viewBox="0 0 64 64" aria-hidden="true" focusable="false">' + (icons[career.id] || icons.fallback) + '</svg>';
+  }
+
   function careerVisualMarkup(career) {
     var figure = '<ellipse cx="67" cy="118" rx="39" ry="6" fill="rgba(0,0,0,.28)"></ellipse><circle cx="67" cy="34" r="16" fill="#f2c7a5" stroke="currentColor" stroke-width="2"></circle><path d="M46 69 Q67 52 88 69 L95 112 H39 Z" fill="currentColor" opacity=".9"></path><path d="M50 70 L31 98 M84 70 L102 98" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"></path><path d="M53 112 V124 M81 112 V124" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"></path>';
     var prop = {
@@ -624,16 +639,56 @@
     visual.innerHTML = careerVisualMarkup(career);
   }
 
+  function blueprintFurnitureMarkup(room) {
+    var x = room.x;
+    var y = room.y;
+    var w = room.w;
+    var h = room.h;
+    var right = x + w;
+    var bottom = y + h;
+    if (room.category === 'housing') {
+      var bedX = Math.max(x + 78, right - 98);
+      var bedY = y + Math.max(55, h - 58);
+      return '<g class="blueprint-furniture"><rect x="' + bedX + '" y="' + bedY + '" width="78" height="39" rx="3"></rect><path d="M ' + bedX + ' ' + (bedY + 12) + ' H ' + (bedX + 78) + ' M ' + (bedX + 22) + ' V ' + (bedY + 39) + ' M ' + (bedX + 56) + ' V ' + (bedY + 39) + '"></path><rect class="blueprint-pillow" x="' + (bedX + 7) + '" y="' + (bedY + 5) + '" width="17" height="9" rx="2"></rect></g>';
+    }
+    if (room.category === 'lifestyle') {
+      var sofaX = Math.max(x + 70, right - 112);
+      var sofaY = bottom - 58;
+      return '<g class="blueprint-furniture"><rect x="' + sofaX + '" y="' + sofaY + '" width="88" height="27" rx="7"></rect><path d="M ' + (sofaX + 8) + ' ' + (sofaY + 27) + ' V ' + (sofaY + 35) + ' M ' + (sofaX + 80) + ' ' + (sofaY + 27) + ' V ' + (sofaY + 35) + '"></path><rect class="blueprint-pillow" x="' + (sofaX + 12) + '" y="' + (sofaY + 6) + '" width="13" height="10" rx="2"></rect><rect x="' + (sofaX + 28) + '" y="' + (sofaY + 41) + '" width="32" height="10" rx="2"></rect></g>';
+    }
+    if (room.category === 'food') {
+      var counterX = right - 104;
+      var counterY = y + 9;
+      return '<g class="blueprint-furniture"><rect x="' + counterX + '" y="' + counterY + '" width="88" height="25" rx="3"></rect><circle cx="' + (counterX + 23) + '" cy="' + (counterY + 12) + '" r="6"></circle><path d="M ' + (counterX + 48) + ' ' + (counterY + 7) + ' H ' + (counterX + 75) + ' M ' + (counterX + 48) + ' ' + (counterY + 17) + ' H ' + (counterX + 75) + '"></path></g>';
+    }
+    if (room.category === 'health') {
+      var fixtureX = right - 86;
+      var fixtureY = y + 20;
+      return '<g class="blueprint-furniture"><rect x="' + fixtureX + '" y="' + fixtureY + '" width="48" height="20" rx="8"></rect><path d="M ' + (fixtureX + 7) + ' ' + (fixtureY + 20) + ' V ' + (fixtureY + 28) + ' H ' + (fixtureX + 40) + ' V ' + (fixtureY + 20) + '"></path><circle cx="' + (fixtureX + 69) + '" cy="' + (fixtureY + 24) + '" r="11"></circle><path d="M ' + (fixtureX + 62) + ' ' + (fixtureY + 24) + ' H ' + (fixtureX + 76) + '"></path></g>';
+    }
+    if (room.category === 'utilities') {
+      var unitX = right - 68;
+      var unitY = y + 24;
+      return '<g class="blueprint-furniture"><rect x="' + unitX + '" y="' + unitY + '" width="42" height="61" rx="3"></rect><circle cx="' + (unitX + 21) + '" cy="' + (unitY + 19) + '" r="10"></circle><circle cx="' + (unitX + 21) + '" cy="' + (unitY + 45) + '" r="10"></circle></g>';
+    }
+    if (room.category === 'transport') {
+      var carX = right - 83;
+      var carY = y + 7;
+      return '<g class="blueprint-furniture"><path d="M ' + (carX + 10) + ' ' + (carY + 20) + ' L ' + (carX + 18) + ' ' + (carY + 7) + ' H ' + (carX + 58) + ' L ' + (carX + 70) + ' ' + (carY + 20) + ' V ' + (carY + 32) + ' H ' + (carX + 6) + ' V ' + (carY + 20) + ' Z"></path><circle cx="' + (carX + 19) + '" cy="' + (carY + 32) + '" r="5"></circle><circle cx="' + (carX + 58) + '" cy="' + (carY + 32) + '" r="5"></circle></g>';
+    }
+    return '';
+  }
+
   function blueprintRoomMarkup(result, room) {
     var row = houseRow(result, room.category);
     var compact = room.h < 62;
-    var amount = room.category === 'housing' ? 'home profile' : money(row.value);
+    var amount = room.category === 'housing' ? (room.primaryHousing ? money(result.housingCost) + ' / mo' : 'included in rent') : money(row.value);
     var profile = result.housingProfile;
     var profileShort = (profile.bedrooms === 0 ? 'studio' : profile.bedrooms + ' bd') + ' · ' + profile.bathrooms + ' bath · ' + Number(profile.sqft).toLocaleString('en-US') + ' sq ft';
-    var share = room.category === 'housing' ? profileShort : percent(row.value / result.monthlyBudget) + ' of plan';
+    var share = room.category === 'housing' ? (room.primaryHousing ? percent(result.housingCost / result.takeHome) + ' of take-home' : profileShort) : percent(row.value / result.monthlyBudget) + ' of plan';
     var label = escapeHtml(room.label);
     var aria = escapeHtml(room.label + ' · ' + amount + ' · ' + share);
-    return '<g class="blueprint-room' + (compact ? ' compact' : '') + (room.category === activeHomeHouseCategory ? ' active' : '') + '" data-house-category="' + room.category + '" role="button" tabindex="0" aria-pressed="' + (room.category === activeHomeHouseCategory ? 'true' : 'false') + '" aria-label="' + aria + '"><title>' + aria + '</title><rect class="blueprint-room-surface" x="' + room.x + '" y="' + room.y + '" width="' + room.w + '" height="' + room.h + '" rx="6"></rect><text class="blueprint-room-label" x="' + (room.x + 14) + '" y="' + (room.y + (compact ? 17 : 25)) + '">' + label + '</text><text class="blueprint-room-value" x="' + (room.x + 14) + '" y="' + (room.y + (compact ? 32 : 48)) + '">' + escapeHtml(amount) + '</text>' + (compact ? '' : '<text class="blueprint-room-share" x="' + (room.x + 14) + '" y="' + (room.y + 65) + '">' + escapeHtml(share) + '</text>') + '</g>';
+    return '<g class="blueprint-room' + (compact ? ' compact' : '') + (room.category === activeHomeHouseCategory ? ' active' : '') + '" data-house-category="' + room.category + '" role="button" tabindex="0" aria-pressed="' + (room.category === activeHomeHouseCategory ? 'true' : 'false') + '" aria-label="' + aria + '"><title>' + aria + '</title><rect class="blueprint-room-surface" x="' + room.x + '" y="' + room.y + '" width="' + room.w + '" height="' + room.h + '" rx="6"></rect>' + blueprintFurnitureMarkup(room) + '<text class="blueprint-room-label" x="' + (room.x + 14) + '" y="' + (room.y + (compact ? 17 : 25)) + '">' + label + '</text><text class="blueprint-room-value" x="' + (room.x + 14) + '" y="' + (room.y + (compact ? 32 : 48)) + '">' + escapeHtml(amount) + '</text>' + (compact ? '' : '<text class="blueprint-room-share" x="' + (room.x + 14) + '" y="' + (room.y + 65) + '">' + escapeHtml(share) + '</text>') + '</g>';
   }
 
   function blueprintLayout(result) {
@@ -680,11 +735,17 @@
     var drawing = $('#home-house-drawing');
     if (!drawing) return;
     var rooms = blueprintLayout(result);
+    var housingPlaced = false;
     var roomMarkup = rooms.map(function (room) {
-      return blueprintRoomMarkup(result, { category: room.category, label: room.label, x: room.x + 20, y: room.y + 70, w: room.w, h: room.h });
+      var primaryHousing = room.category === 'housing' && !housingPlaced;
+      if (primaryHousing) housingPlaced = true;
+      return blueprintRoomMarkup(result, { category: room.category, label: room.label, x: room.x + 20, y: room.y + 70, w: room.w, h: room.h, primaryHousing: primaryHousing });
     }).join('');
     var profileLabel = housingSpec(result.housingProfile);
-    drawing.innerHTML = '<svg viewBox="0 0 800 475" role="img" aria-label="' + escapeHtml(profileLabel + ' interactive floor plan') + '"><defs><pattern id="blueprint-grid-pattern" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M 24 0 L 0 0 0 24" fill="none" stroke="rgba(116,200,255,.13)" stroke-width="1"></path></pattern></defs><rect class="blueprint-grid" width="800" height="475"></rect><text class="blueprint-home-title" x="24" y="24">' + escapeHtml(result.housingProfile.bedrooms === 0 ? 'STUDIO HOUSE PLAN' : result.housingProfile.bedrooms + ' BEDROOM HOUSE PLAN') + '</text><text class="blueprint-home-note" x="24" y="42">Peaked roof · interior rooms · front door · garage / commute</text><path class="blueprint-roof-shape" d="M 34 145 L 400 25 L 766 145 Z"></path><path class="blueprint-house-body" d="M 60 132 H 740 V 438 H 60 Z"></path><path class="blueprint-chimney" d="M 610 82 V 34 H 653 V 95"></path>' + roomMarkup + '<rect class="blueprint-front-door" x="375" y="405" width="50" height="33" rx="4"></rect><circle class="blueprint-door-knob" cx="414" cy="422" r="3"></circle><path class="blueprint-window" d="M 73 177 H 105 M 73 185 H 105 M 695 177 H 727 M 695 185 H 727"></path><path class="blueprint-driveway" d="M 620 438 L 594 466 H 746 L 720 438"></path><text class="blueprint-front-label" x="382" y="457">FRONT</text><text class="blueprint-home-note" x="602" y="471">garage / commute</text></svg>';
+    var rentShare = result.takeHome ? percent(result.housingCost / result.takeHome) : '—';
+    var rentBadge = '<g class="blueprint-rent-badge' + (activeHomeHouseCategory === 'housing' ? ' active' : '') + '" data-house-category="housing" role="button" tabindex="0" aria-pressed="' + (activeHomeHouseCategory === 'housing' ? 'true' : 'false') + '" aria-label="Housing rent · ' + escapeHtml(money(result.housingCost)) + ' per month · ' + escapeHtml(rentShare) + ' of take-home pay"><rect x="260" y="66" width="280" height="59" rx="8"></rect><text class="blueprint-rent-label" x="400" y="83" text-anchor="middle">ROOF · RENT / HOUSING</text><text class="blueprint-rent-value" x="400" y="104" text-anchor="middle">' + escapeHtml(money(result.housingCost)) + ' / MONTH</text><text class="blueprint-rent-share" x="400" y="117" text-anchor="middle">' + escapeHtml(rentShare + ' of take-home pay') + '</text></g>';
+    var architecturalMarkup = '<g class="blueprint-architecture"><path class="blueprint-roof-line" d="M 34 145 L 400 25 L 766 145"></path><path class="blueprint-wall-edge" d="M 60 132 H 740 M 60 438 H 740"></path><path class="blueprint-door-swing" d="M 375 405 A 50 50 0 0 1 425 355"></path><path class="blueprint-garage-door" d="M 595 405 H 720 M 595 413 H 720 M 595 421 H 720 M 595 429 H 720"></path><path class="blueprint-window-cross" d="M 78 174 V 208 M 69 191 H 87 M 712 174 V 208 M 703 191 H 721 M 173 132 V 147 M 164 139 H 182 M 640 132 V 147 M 631 139 H 649"></path><path class="blueprint-porch" d="M 350 438 H 450 V 454 H 350 Z"></path></g>';
+    drawing.innerHTML = '<svg viewBox="0 0 800 475" role="img" aria-label="' + escapeHtml(profileLabel + ' interactive floor plan') + '"><defs><pattern id="blueprint-grid-pattern" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M 24 0 L 0 0 0 24" fill="none" stroke="rgba(116,200,255,.13)" stroke-width="1"></path></pattern></defs><rect class="blueprint-grid" width="800" height="475"></rect><text class="blueprint-home-title" x="24" y="24">' + escapeHtml(result.housingProfile.bedrooms === 0 ? 'STUDIO HOUSE PLAN' : result.housingProfile.bedrooms + ' BEDROOM HOUSE PLAN') + '</text><text class="blueprint-home-note" x="24" y="42">Roof = rent · rooms = monthly costs · front door = room left</text><path class="blueprint-roof-shape" d="M 34 145 L 400 25 L 766 145 Z"></path>' + rentBadge + '<path class="blueprint-house-body" d="M 60 132 H 740 V 438 H 60 Z"></path><path class="blueprint-chimney" d="M 610 82 V 34 H 653 V 95"></path>' + roomMarkup + architecturalMarkup + '<rect class="blueprint-front-door" x="375" y="405" width="50" height="33" rx="4"></rect><circle class="blueprint-door-knob" cx="414" cy="422" r="3"></circle><path class="blueprint-driveway" d="M 620 438 L 594 466 H 746 L 720 438"></path><text class="blueprint-front-label" x="382" y="457">FRONT DOOR</text><text class="blueprint-home-note" x="602" y="471">garage / commute</text></svg>';
     setText('#home-house-type', result.housingProfile.bedrooms === 0 ? 'STUDIO HOME' : result.housingProfile.bedrooms + ' BEDROOM HOME');
     setText('#home-house-profile', profileLabel);
     setText('#home-house-savings-value', money(houseRow(result, 'savings').value) + ' / mo');
@@ -693,6 +754,8 @@
     void drawing.offsetWidth;
     drawing.classList.add('house-swap-in');
     var clickTargets = $all('.blueprint-room', drawing);
+    var rentTarget = $('.blueprint-rent-badge', drawing);
+    if (rentTarget) clickTargets.push(rentTarget);
     var foundation = $('.blueprint-foundation-room');
     if (foundation) clickTargets.push(foundation);
     clickTargets.forEach(function (target) {
@@ -735,7 +798,8 @@
     renderCareerVisual(result.career);
     setText('#home-career-role', result.career.name);
     setText('#home-career-family', result.career.family + ' · median salary lens');
-    setText('#home-career-prop', result.career.icon || '✦');
+    var careerProp = $('#home-career-prop');
+    if (careerProp) careerProp.innerHTML = careerIconMarkup(result.career);
     setText('#home-house-label', result.career.name + ' · ' + result.state.name);
     setText('#home-house-gross', money(result.salary / 12));
     setText('#home-house-tax', '−' + money(result.salary / 12 - result.takeHome));
@@ -751,8 +815,8 @@
     setText('#home-house-analysis-label', 'Largest modeled cost');
     setText('#home-house-analysis-value', pressure.label + ' · ' + money(pressure.value));
     setText('#home-house-analysis-note', result.leftover >= 0 ? 'After the full plan, this scenario keeps ' + money(result.leftover) + ' of monthly breathing room.' : 'After the full plan, this scenario has a ' + money(Math.abs(result.leftover)) + ' monthly gap to close.');
-    setText('#home-house-budget-caption', 'The door shows ' + signedMoney(result.leftover) + ' after a ' + money(result.monthlyBudget) + ' monthly plan. Click another room to see how that category contributes to the result.');
-    setText('#home-house-reading-copy', 'The rooms are monthly categories, not separate bills. Together they create the modeled plan; the foundation is the savings target, and the door is the remaining income after the plan.');
+    setText('#home-house-budget-caption', 'The roof is the housing cost: ' + money(result.housingCost) + ' per month (' + percent(result.housingCost / result.takeHome) + ' of take-home pay). The door shows ' + signedMoney(result.leftover) + ' after the full ' + money(result.monthlyBudget) + ' monthly plan. Click another room to isolate its effect.');
+    setText('#home-house-reading-copy', 'Read the house from top to bottom: the roof is rent, the rooms are monthly cost categories, the foundation is the savings target, and the front door is the income still available after the plan.');
     var canvas = $('#home-house-canvas');
     if (canvas) {
       canvas.setAttribute('data-home-profile', result.housingProfile.id);
@@ -974,7 +1038,7 @@
     var deck = $('#home-career-deck');
     if (!deck) return;
     deck.innerHTML = DATA.careers.map(function (career) {
-      return '<button class="career-card' + (career.id === activeCareerId ? ' active' : '') + '" type="button" data-career-id="' + escapeHtml(career.id) + '"><span class="career-card-icon">' + escapeHtml(career.icon) + '</span><strong>' + escapeHtml(career.name) + '</strong><small>' + escapeHtml(career.family) + '</small><b>' + compactMoney(career.base) + ' / yr</b></button>';
+      return '<button class="career-card' + (career.id === activeCareerId ? ' active' : '') + '" type="button" data-career-id="' + escapeHtml(career.id) + '"><span class="career-card-icon">' + careerIconMarkup(career) + '</span><strong>' + escapeHtml(career.name) + '</strong><small>' + escapeHtml(career.family) + '</small><b>' + compactMoney(career.base) + ' / yr</b></button>';
     }).join('');
     $all('.career-card', deck).forEach(function (button) {
       button.addEventListener('click', function () {
@@ -990,7 +1054,8 @@
   }
 
   function renderHomeHero(scenario) {
-    setText('#home-hero-icon', scenario.career.icon || '✦');
+    var heroIcon = $('#home-hero-icon');
+    if (heroIcon) heroIcon.innerHTML = careerIconMarkup(scenario.career);
     setText('#home-hero-role', scenario.career.name);
     setText('#home-hero-location', scenario.state.name + ' · ' + scenario.household.name);
     $('#home-hero-take-home').innerHTML = money(scenario.takeHome) + '<span>/mo</span>';
