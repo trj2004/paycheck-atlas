@@ -1144,14 +1144,16 @@
       window.setTimeout(function () {
         gate.classList.remove('is-knocking');
         gate.classList.add('is-opening');
+        if (status) status.textContent = 'THE HOUSE IS OPEN. FOLLOW THE LIGHT.';
       }, 440);
       window.setTimeout(function () {
+        if (status) status.textContent = 'ENTERING THE LIVING BLUEPRINT...';
         gate.classList.add('is-entering');
         document.body.classList.remove('arrival-locked');
-      }, 860);
+      }, 1180);
       window.setTimeout(function () {
         gate.classList.add('is-gone');
-      }, 1750);
+      }, 2200);
     }
     if (door) {
       door.addEventListener('click', enterSite);
