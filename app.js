@@ -10,6 +10,8 @@
   var mapZoom = 1;
   var latestRows = [];
   var activeHomeHouseCategory = 'housing';
+  var homeSwipeScenarioA = null;
+  var homeSwipeScenarioB = null;
 
   var MAP_LAYOUT = {
     WA: [1, 1], ID: [2, 1], MT: [3, 1], ND: [4, 1], MN: [5, 1], WI: [6, 1], MI: [7, 1], NY: [8, 1], VT: [9, 1], NH: [10, 1], ME: [11, 1],
@@ -576,9 +578,28 @@
     setText('#home-swipe-position', numericValue + '% ' + stateAName + ' · ' + (100 - numericValue) + '% ' + stateBName + ' visible');
     var divider = $('#home-state-divider');
     if (divider) divider.setAttribute('aria-valuetext', numericValue + ' percent ' + stateAName + ' and ' + (100 - numericValue) + ' percent ' + stateBName + ' visible');
+    if (!homeSwipeScenarioA || !homeSwipeScenarioB) return;
+    var transition = clamp((Number(value) - 18) / 64, 0, 1);
+    var blend = function (key) { return homeSwipeScenarioA[key] + ((homeSwipeScenarioB[key] - homeSwipeScenarioA[key]) * transition); };
+    var rent = blend('housingCost');
+    var takeHome = blend('takeHome');
+    var plan = blend('monthlyBudget');
+    var leftover = blend('leftover');
+    var ratioValue = blend('ratio');
+    var activeName = transition < .45 ? stateAName : transition > .55 ? stateBName : stateAName + ' ↔ ' + stateBName;
+    setText('#home-swipe-active-state', activeName);
+    setText('#home-swipe-active-copy', transition < .05 || transition > .95 ? 'Endpoint scenario · observed at ' + (transition < .5 ? stateAName : stateBName) : 'Visual transition between the two endpoint scenarios');
+    setText('#home-swipe-rent', money(rent));
+    setText('#home-swipe-pay', money(takeHome));
+    setText('#home-swipe-plan', money(plan));
+    setText('#home-swipe-live-leftover', signedMoney(leftover));
+    setText('#home-swipe-ratio', ratio(ratioValue));
+    setText('#home-swipe-explanation', 'At this position, modeled rent is ' + money(rent) + ' per month, the full plan is ' + money(plan) + ', and the household has ' + signedMoney(leftover) + ' left after expenses. The endpoints are real scenarios; the middle is a visual transition between them.');
   }
 
   function renderHomeStateSwipe(scenarioA, scenarioB) {
+    homeSwipeScenarioA = scenarioA;
+    homeSwipeScenarioB = scenarioB;
     setText('#home-swipe-a-state', scenarioA.state.name);
     setText('#home-swipe-b-state', scenarioB.state.name);
     setText('#home-swipe-a-leftover', signedMoney(scenarioA.leftover));
