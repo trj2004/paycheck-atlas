@@ -568,6 +568,14 @@
   function updateHomeStateSwipe(value) {
     var swipe = $('#home-state-swipe');
     if (swipe) swipe.style.setProperty('--split', String(value) + '%');
+    var numericValue = Math.round(Number(value) || 50);
+    var stateA = $('#home-swipe-a-state');
+    var stateB = $('#home-swipe-b-state');
+    var stateAName = stateA ? stateA.textContent : 'State A';
+    var stateBName = stateB ? stateB.textContent : 'State B';
+    setText('#home-swipe-position', numericValue + '% ' + stateAName + ' · ' + (100 - numericValue) + '% ' + stateBName + ' visible');
+    var divider = $('#home-state-divider');
+    if (divider) divider.setAttribute('aria-valuetext', numericValue + ' percent ' + stateAName + ' and ' + (100 - numericValue) + ' percent ' + stateBName + ' visible');
   }
 
   function renderHomeStateSwipe(scenarioA, scenarioB) {
