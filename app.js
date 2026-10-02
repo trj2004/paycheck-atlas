@@ -1009,6 +1009,83 @@
     renderCpiLens(result, $('#home-trend'));
   }
 
+  function evidenceRowMarkup(label, value, valueLabel, maxValue, className) {
+    var safeValue = Math.max(0, Number(value) || 0);
+    var width = clamp((safeValue / (maxValue || 1)) * 100, 4, 100);
+    return '<div class="evidence-row ' + (className || '') + '"><div class="evidence-row-top"><span>' + escapeHtml(label) + '</span><strong>' + escapeHtml(valueLabel) + '</strong></div><div class="evidence-row-track"><i style="width:' + width + '%"></i></div></div>';
+  }
+
+  function renderReportEvidence(result, comparison) {
+    var states = DATA.states.map(function (state) {
+      return calculate({ careerId: result.career.id, stateCode: state.code, year: result.year, householdId: result.household.id, percentileKey: result.percentileKey, modeId: result.mode.id, housingId: result.housingId, customSalary: result.customSalary || '' });
+    });
+    var ranked = states.slice().sort(function (a, b) { return b.ratio - a.ratio; });
+    var best = ranked[0];
+    var worst = ranked[ranked.length - 1];
+    var topLocation = ranked.slice(0, 4).concat([worst]);
+    var maxRatio = Math.max.apply(null, topLocation.map(function (item) { return item.ratio; }));
+    $('#report-location-chart').innerHTML = topLocation.map(function (item, index) {
+      return evidenceRowMarkup((index === topLocation.length - 1 ? 'Tightest · ' : '') + item.state.name, item.ratio, ratio(item.ratio), maxRatio, index === 0 ? 'is-leading' : '');
+    }).join('');
+    setText('#report-location-copy', best.state.name + ' ranks first at ' + ratio(best.ratio) + ', while ' + worst.state.name + ' ranks last at ' + ratio(worst.ratio) + '. That is a ' + money(best.leftover - worst.leftover) + ' monthly breathing-room spread under the same career and home lens.');
+
+    var expenseRows = result.rows.filter(function (item) { return item.value > 0 && item.key !== 'savings'; }).sort(function (a, b) { return b.value - a.value; });
+    var largestExpense = expenseRows[0];
+    var maxExpense = expenseRows[0] ? expenseRows[0].value : 1;
+    $('#report-expense-chart').innerHTML = expenseRows.slice(0, 5).map(function (item) {
+      return evidenceRowMarkup(item.label, item.value, money(item.value) + ' / mo', maxExpense, item.key === largestExpense.key ? 'is-leading' : '');
+    }).join('');
+    setText('#report-expense-copy', largestExpense.label + ' is the largest modeled pressure at ' + money(largestExpense.value) + ' per month, or ' + percent(largestExpense.value / result.monthlyBudget) + ' of the full plan.');
+
+    var homeMaxRent = Math.max(result.housingCost, comparison.housingCost);
+    $('#report-home-chart').innerHTML = evidenceRowMarkup(result.state.name + ' · ' + result.housingProfile.label, result.housingCost, money(result.housingCost) + ' rent', homeMaxRent, 'is-leading') + evidenceRowMarkup(comparison.state.name + ' · same home', comparison.housingCost, money(comparison.housingCost) + ' rent', homeMaxRent, 'is-compare');
+    setText('#report-home-copy', 'The same ' + result.housingProfile.label.toLowerCase() + ' costs ' + money(Math.abs(result.housingCost - comparison.housingCost)) + ' more per month in ' + (result.housingCost >= comparison.housingCost ? result.state.name : comparison.state.name) + '. The address changes; the home profile does not.');
+
+    var essentials = result.essentials;
+    var planPieces = [
+      { label: 'Essentials', value: essentials, className: 'route-essential' },
+      { label: 'Personal spending', value: result.mode.discretionary * result.priceFactor * cpiFactor(result.year, 'other'), className: 'route-discretionary' },
+      { label: 'Savings target', value: result.mode.savings, className: 'route-savings' }
+    ];
+    var routeTotal = Math.max(result.takeHome, result.monthlyBudget, 1);
+    $('#report-route-chart').innerHTML = planPieces.map(function (item) {
+      return '<div class="route-piece ' + item.className + '" style="width:' + clamp(item.value / routeTotal * 100, 0, 100) + '%"><span>' + escapeHtml(item.label) + '</span><strong>' + money(item.value) + '</strong></div>';
+    }).join('') + '<div class="route-leftover ' + (result.leftover < 0 ? 'is-gap' : '') + '" style="width:' + clamp(Math.abs(result.leftover) / routeTotal * 100, 0, 100) + '%"><span>' + (result.leftover < 0 ? 'Gap' : 'Room left') + '</span><strong>' + signedMoney(result.leftover) + '</strong></div>';
+    setText('#report-route-copy', money(result.takeHome) + ' of monthly take-home enters the plan. ' + (result.leftover >= 0 ? money(result.leftover) + ' remains after the modeled costs and goals.' : 'The modeled plan runs ' + money(Math.abs(result.leftover)) + ' above take-home pay.'));
+
+    var salaryLenses = ['lower', 'median', 'upper'].map(function (key) {
+      return { key: key, label: DATA.percentiles[key].label, item: calculate({ careerId: result.career.id, stateCode: result.state.code, year: result.year, householdId: result.household.id, percentileKey: key, modeId: result.mode.id, housingId: result.housingId }) };
+    });
+    var maxSalaryRatio = Math.max.apply(null, salaryLenses.map(function (item) { return item.item.ratio; }));
+    $('#report-salary-chart').innerHTML = salaryLenses.map(function (item) {
+      return evidenceRowMarkup(item.label, item.item.ratio, ratio(item.item.ratio), maxSalaryRatio, item.key === result.percentileKey ? 'is-leading' : '');
+    }).join('');
+    setText('#report-salary-copy', 'At the selected state, moving from the 25th to the 75th percentile changes room left from ' + signedMoney(salaryLenses[0].item.leftover) + ' to ' + signedMoney(salaryLenses[2].item.leftover) + ' per month.');
+
+    var householdLenses = DATA.households.map(function (household) {
+      return { household: household, item: calculate({ careerId: result.career.id, stateCode: result.state.code, year: result.year, householdId: household.id, percentileKey: result.percentileKey, modeId: result.mode.id, housingId: result.housingId }) };
+    });
+    var maxHouseholdRatio = Math.max.apply(null, householdLenses.map(function (item) { return item.item.ratio; }));
+    $('#report-household-chart').innerHTML = householdLenses.map(function (item) {
+      return evidenceRowMarkup(item.household.name, item.item.ratio, ratio(item.item.ratio), maxHouseholdRatio, item.household.id === result.household.id ? 'is-leading' : '');
+    }).join('');
+    var hardestHousehold = householdLenses.slice().sort(function (a, b) { return a.item.ratio - b.item.ratio; })[0];
+    setText('#report-household-copy', 'The ' + hardestHousehold.household.name.toLowerCase() + ' scenario is the tightest at ' + ratio(hardestHousehold.item.ratio) + '. Household composition can move the result even when the job, state, year, and housing profile stay fixed.');
+
+    var first = calculate({ careerId: result.career.id, stateCode: result.state.code, year: DATA.years[0], householdId: result.household.id, percentileKey: result.percentileKey, modeId: result.mode.id, housingId: result.housingId, customSalary: result.customSalary || '' });
+    var last = calculate({ careerId: result.career.id, stateCode: result.state.code, year: latestYear(), householdId: result.household.id, percentileKey: result.percentileKey, modeId: result.mode.id, housingId: result.housingId, customSalary: result.customSalary || '' });
+    var payGrowth = (last.takeHome / first.takeHome - 1) * 100;
+    var costGrowth = (last.monthlyBudget / first.monthlyBudget - 1) * 100;
+    var maxGrowth = Math.max(payGrowth, costGrowth, 1);
+    $('#report-time-chart').innerHTML = evidenceRowMarkup('Take-home pay', payGrowth, '+' + Math.round(payGrowth) + '%', maxGrowth, 'is-leading') + evidenceRowMarkup('Basic-life plan', costGrowth, '+' + Math.round(costGrowth) + '%', maxGrowth, 'is-compare');
+    setText('#report-time-copy', 'From ' + DATA.years[0] + ' to ' + latestYear() + ', take-home pay changes by ' + Math.round(payGrowth) + '% while the modeled plan changes by ' + Math.round(costGrowth) + '%. The larger line is the one putting more pressure on the house.');
+
+    var thresholdRatio = result.salary / result.requiredGross;
+    var thresholdWidth = clamp(thresholdRatio * 100, 3, 100);
+    $('#report-threshold-chart').innerHTML = '<div class="threshold-track"><i style="width:' + thresholdWidth + '%"></i><span class="threshold-marker" style="left:100%"></span></div><div class="threshold-labels"><span>Current gross<br><strong>' + money(result.salary) + '</strong></span><span>Break-even target<br><strong>' + money(result.requiredGross) + '</strong></span></div>';
+    setText('#report-threshold-copy', result.salary >= result.requiredGross ? 'This salary clears the modeled break-even target by ' + money(result.salary - result.requiredGross) + ' per year.' : 'This salary is ' + money(result.requiredGross - result.salary) + ' below the modeled break-even target for the selected plan.');
+  }
+
   function renderHomeTimeMachine(result) {
     var slider = $('#home-time-scrubber');
     if (!slider) return;
@@ -1089,6 +1166,7 @@
     renderHomeHero(scenarioA);
     renderHomeHousing(scenarioA, scenarioB);
     renderHomeScenario(scenarioA);
+    renderReportEvidence(scenarioA, scenarioB);
     renderHomeHouse(scenarioA);
     renderHomeTimeMachine(scenarioA);
     setText('#home-passport-a', '');

@@ -910,6 +910,49 @@ dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
   100% { opacity: 1; transform: scale(1); }
 }
 
+.report-evidence-section { padding-top: 118px; padding-bottom: 118px; }
+.evidence-heading { align-items: end; margin-bottom: 38px; }
+.evidence-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 14px; }
+.evidence-card { grid-column: span 3; min-height: 354px; padding: 24px; border: 1px solid rgba(255,255,255,.09); border-radius: 24px; background: linear-gradient(145deg, rgba(21,38,45,.95), rgba(11,23,29,.95)); box-shadow: 0 20px 60px rgba(0,0,0,.12); }
+.evidence-card-wide { grid-column: span 6; }
+.evidence-card-head { display: flex; gap: 13px; align-items: flex-start; }
+.evidence-number { display: inline-grid; place-items: center; flex: 0 0 34px; width: 34px; height: 34px; border: 1px solid rgba(201,245,106,.36); border-radius: 50%; color: var(--lime); font: 800 11px/1 var(--mono); letter-spacing: .05em; }
+.evidence-card h3 { margin: 5px 0 0; font-size: clamp(20px, 2vw, 28px); line-height: 1.02; letter-spacing: -.04em; }
+.evidence-card > p:not(.evidence-finding) { margin: 20px 0 22px; color: var(--muted); font-size: 14px; line-height: 1.65; }
+.evidence-chart { min-height: 126px; display: grid; align-content: center; gap: 10px; }
+.evidence-row { display: grid; gap: 6px; }
+.evidence-row-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; color: var(--muted); font: 600 11px/1.25 var(--mono); }
+.evidence-row-top span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.evidence-row-top strong { flex: 0 0 auto; color: var(--paper); font-size: 11px; }
+.evidence-row-track { height: 8px; overflow: hidden; border-radius: 99px; background: rgba(255,255,255,.08); }
+.evidence-row-track i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--cyan), var(--lime)); box-shadow: 0 0 18px rgba(201,245,106,.2); transition: width .55s cubic-bezier(.2,.8,.2,1); }
+.evidence-row.is-compare .evidence-row-track i { background: linear-gradient(90deg, var(--coral), #ffd18a); }
+.evidence-row.is-leading .evidence-row-top strong { color: var(--lime); }
+.evidence-finding { min-height: 57px; margin: 20px 0 0; padding-top: 15px; border-top: 1px solid rgba(255,255,255,.08); color: #dce5e7; font-size: 13px; line-height: 1.55; }
+.evidence-stack-chart { gap: 8px; }
+.evidence-stack-chart .evidence-row-track { height: 7px; }
+.paycheck-route { display: flex; align-items: stretch; min-height: 78px; overflow: hidden; border: 1px solid rgba(255,255,255,.1); border-radius: 14px; background: rgba(0,0,0,.14); }
+.route-piece, .route-leftover { display: flex; min-width: 7%; flex-direction: column; justify-content: center; gap: 4px; padding: 11px 8px; overflow: hidden; border-right: 1px solid rgba(5,18,24,.3); color: #061015; transition: width .65s cubic-bezier(.2,.8,.2,1); }
+.route-piece span, .route-leftover span { overflow: hidden; font: 700 9px/1.1 var(--mono); text-overflow: ellipsis; white-space: nowrap; }
+.route-piece strong, .route-leftover strong { font-size: 15px; white-space: nowrap; }
+.route-essential { background: var(--cyan); }
+.route-discretionary { background: #b4ddff; }
+.route-savings { background: var(--lime); }
+.route-leftover { border-right: 0; background: #edf2f0; }
+.route-leftover.is-gap { color: white; background: var(--coral); }
+.threshold-visual { display: grid; align-content: center; min-height: 126px; gap: 16px; }
+.threshold-track { position: relative; height: 16px; border-radius: 99px; background: rgba(255,255,255,.1); }
+.threshold-track i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--coral), var(--lime)); transition: width .55s cubic-bezier(.2,.8,.2,1); }
+.threshold-marker { position: absolute; top: -7px; width: 2px; height: 30px; background: var(--paper); box-shadow: 0 0 0 4px rgba(255,255,255,.13); }
+.threshold-labels { display: flex; justify-content: space-between; gap: 15px; color: var(--muted); font: 10px/1.35 var(--mono); }
+.threshold-labels span:last-child { text-align: right; }
+.threshold-labels strong { display: block; margin-top: 4px; color: var(--paper); font-size: 15px; }
+.evidence-note { display: flex; align-items: center; gap: 13px; margin-top: 18px; padding: 18px 20px; border: 1px solid rgba(201,245,106,.19); border-radius: 16px; background: rgba(201,245,106,.06); }
+.evidence-note .status-dot { flex: 0 0 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 14px var(--lime); }
+.evidence-note p { flex: 1; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+.evidence-note p strong { color: var(--paper); }
+.evidence-note a { flex: 0 0 auto; color: var(--lime); font: 700 11px/1 var(--mono); text-decoration: none; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
@@ -932,6 +975,7 @@ dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
   .metric-grid { grid-template-columns: repeat(2, 1fr); }
   .model-grid { grid-template-columns: repeat(2, 1fr); }
   .house-lab-grid { grid-template-columns: 1fr; }
+  .evidence-card, .evidence-card-wide { grid-column: span 6; }
 }
 
 @media (max-width: 700px) {
@@ -1052,4 +1096,13 @@ dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
   .ranked-row { grid-template-columns: 20px 85px 1fr 48px; gap: 6px; }
   .table-actions { margin-top: 18px; }
   .site-footer span { display: block; margin-top: 8px; }
+  .report-evidence-section { padding-top: 72px; padding-bottom: 72px; }
+  .evidence-grid { display: block; }
+  .evidence-card, .evidence-card-wide { min-height: 0; margin-bottom: 12px; }
+  .evidence-note { display: block; }
+  .evidence-note .status-dot { display: inline-block; margin-right: 8px; }
+  .evidence-note a { display: block; margin-top: 15px; }
+  .paycheck-route { min-height: 96px; }
+  .route-piece, .route-leftover { padding-inline: 6px; }
+  .route-piece strong, .route-leftover strong { font-size: 12px; }
 }
