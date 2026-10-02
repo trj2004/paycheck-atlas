@@ -4,7 +4,7 @@ An interactive exploration of how location changes the purchasing power of a ful
 
 ## Current checkpoint
 
-The feature branch contains the source-backed build: 361,780 validated occupation × state × year rows across 2015–2024, 51 state/DC contexts, and 988 occupations. The published `main` branch can remain the submitted design checkpoint until this branch is reviewed and merged.
+The feature branch contains the source-backed build: 361,780 validated occupation × state × year rows across 2015–2024, 51 state/DC contexts, and 988 occupations. The published `main` branch should be updated from this branch before final submission.
 
 The project question is:
 
@@ -18,11 +18,13 @@ The site adds two connected lenses: whether a paycheck has kept up with the cost
 - `dashboard.html` — interactive scenario dashboard.
 - `styles.css` — shared dark financial/home design system.
 - `app.js` — calculations, controls, rankings, and visual rendering.
-- `data/prototype-data.js` — safe fallback data if the generated source file is unavailable.
 - `data/source-data.js` — generated browser contract from the validated panel.
-- The dashboard includes a 50-state click map, map measure toggles, a time scrubber, a selected-state story card, full occupation search, and source-backed scenario calculations.
+- `assets/us_map.svg` and `assets/us_map-inline.js` — the map source and browser-ready inline map.
+- The dashboard includes a 50-state click map, map measure toggles, a time scrubber, a selected-state story card, a full occupation selector, and source-backed scenario calculations.
 - `data/README.md` — panel grain, source map, field definitions, and reproducibility notes.
 - `scripts/build_dataset.py` — source-backed BLS/BEA/ACS panel builder and rubric validator.
+- `scripts/build_web_data.py` — creates the browser data contract from the validated panel.
+- `scripts/prepare_map.py` — prepares the map asset for static browser use.
 
 ## Preview
 
@@ -30,7 +32,7 @@ Open `index.html` for the report homepage and `dashboard.html` for the separate 
 
 ## Final data shape
 
-The source-backed panel is designed at one occupation × state × year per row. Ten annual periods across roughly 50 states and hundreds of occupations should provide far more than the 50,000-row class requirement. The long grain also keeps the data reusable for the separate future Excel project, but the website itself is focused on the affordability analysis rather than pivot-table features.
+The source-backed panel is designed at one occupation × state × year per row. Ten annual periods across roughly 50 states and hundreds of occupations should provide far more than the 50,000-row class requirement. The long grain also keeps the data reusable for the separate future Excel project, but the website itself is focused on the affordability analysis rather than pivot-table features. Wage combinations that are not present in the official source are excluded from interactive rankings and selectors rather than imputed.
 
 Run the pipeline from the `fda-python` repository root with `uv run python ..\paycheck-atlas\scripts\build_dataset.py`, then run `uv run python ..\paycheck-atlas\scripts\build_web_data.py`. The builder caches official raw downloads, joins the sources, checks row count/group/time coverage, rejects duplicate keys and incomplete context fields, and writes processed CSV/Parquet outputs. Public official summary-file caches mean Census and BEA API keys are not required for this validated build; API keys remain supported as local-only fallbacks and must never be committed or shared. `--allow-missing-rpp` exists only for debugging and is not a final-data workflow.
 

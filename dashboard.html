@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body data-page="dashboard">
-  <div class="prototype-banner"><span class="pulse-dot"></span><span data-status-label>Visual prototype · illustrative scenario data</span></div>
+  <div class="prototype-banner"><span class="pulse-dot"></span><span data-status-label>Source-backed data · validated panel</span></div>
   <nav class="site-nav shell"><a class="brand" href="index.html"><span class="brand-mark">$</span><span>PAYCHECK<span class="brand-accent">ATLAS</span></span></a><div class="nav-links"><a href="index.html">Report</a><a class="active" href="dashboard.html">Build your budget <span class="arrow">↗</span></a></div></nav>
 
   <main class="dashboard-shell shell">
@@ -25,6 +25,7 @@
         <label class="control-field"><span>Household</span><select id="household-select"></select></label>
         <label class="control-field"><span>Home benchmark</span><select id="housing-select"></select></label>
         <label class="control-field"><span>Salary lens</span><select id="percentile-select"></select></label>
+        <label class="control-field"><span>Paycheck comparison</span><select id="wage-mode-select"><option value="local">Local state wage</option><option value="same-paycheck">Same gross paycheck</option></select></label>
         <label class="control-field control-wide"><span>Budget model</span><select id="mode-select"></select></label>
         <label class="control-field custom-salary-field"><span>Custom salary <em>optional</em></span><div class="input-prefix"><span>$</span><input id="custom-salary" type="number" min="20000" max="300000" step="1000" placeholder="Use career salary"></div></label>
       </div>
@@ -33,7 +34,7 @@
 
     <section class="map-stage">
       <article class="dash-panel map-panel">
-        <div class="panel-top map-panel-top"><div><span class="card-kicker">THE LOCATION LENS</span><h2>Where does the paycheck stretch?</h2><p>Every color is one state under the same career, household, home, year, and budget model.</p></div><label class="inline-select"><span>Map by</span><select id="map-measure"><option value="ratio">Affordability ratio</option><option value="leftover">Monthly leftover</option><option value="required">Salary required</option><option value="price">Price level</option><option value="housing">Housing share</option></select></label></div>
+      <div class="panel-top map-panel-top"><div><span class="card-kicker">THE LOCATION LENS</span><h2>Where does the paycheck stretch?</h2><p>Every color is one state under the same occupation, household, home, year, and budget model. Choose local wages or hold the gross paycheck constant above.</p></div><label class="inline-select"><span>Map by</span><select id="map-measure"><option value="ratio">Affordability ratio</option><option value="leftover">Monthly leftover</option><option value="required">Salary required</option><option value="price">Price level</option><option value="housing">Housing share</option></select></label></div>
         <div class="map-toolbar"><span><i class="map-legend-dot low"></i> <span id="map-legend-low">tighter budget</span></span><span><i class="map-legend-dot high"></i> <span id="map-legend-high">more breathing room</span></span><span class="map-hint">Lime = main state · orange = side-by-side state</span><div class="map-tools" aria-label="Map zoom controls"><button type="button" id="map-zoom-out" aria-label="Zoom out" title="Zoom out">−</button><button type="button" id="map-zoom-reset" aria-label="Reset map zoom" title="Reset zoom"><span id="map-zoom-value">100%</span></button><button type="button" id="map-zoom-in" aria-label="Zoom in" title="Zoom in">+</button></div></div>
         <div class="atlas-map" id="atlas-map" aria-label="Interactive 50-state map of the United States"><div class="map-tooltip" id="map-tooltip" role="status" aria-live="polite"></div></div>
         <div class="map-scrubber"><span class="scrubber-label">Time travel</span><input id="map-year-scrubber" type="range" min="2015" max="2024" step="1" value="2024"><output id="map-year-label">2024</output><span class="scrubber-note">Same scenario, different year</span></div>
@@ -42,14 +43,14 @@
     </section>
 
     <section class="housing-stage">
-      <article class="dash-panel housing-panel"><div class="panel-top"><div><span class="card-kicker">THE SAME-HOME TEST</span><h2>What does this home cost across America?</h2><p id="housing-benchmark-copy">Hold the career, household, and home benchmark constant. Only the coordinates change.</p></div><span class="card-icon">⌂</span></div><div class="housing-cards" id="housing-cards"></div><div class="housing-insight" id="housing-insight"></div></article>
+      <article class="dash-panel housing-panel"><div class="panel-top"><div><span class="card-kicker">THE SAME-HOME TEST</span><h2>What does this home cost across America?</h2><p id="housing-benchmark-copy">Hold the occupation, salary lens, household, and home benchmark constant. Local wage and cost inputs can change by state.</p></div><span class="card-icon">⌂</span></div><div class="housing-cards" id="housing-cards"></div><div class="housing-insight" id="housing-insight"></div></article>
     </section>
 
     <section class="dashboard-kpis" id="dashboard-kpis"></section>
 
     <section class="dashboard-grid top-grid">
       <article class="dash-panel hero-result-panel"><div class="panel-top"><div><span class="card-kicker">MAIN STATE · MONTHLY PICTURE</span><h2 id="result-title">Texas · Registered Nurse</h2><p id="result-subtitle">Solo renter · Median salary · 2024</p></div><div class="result-badge" id="result-badge">SURPLUS</div></div><div class="hero-result-body"><div class="gauge-wrap"><div class="gauge" id="affordability-gauge"><div class="gauge-center"><span>ratio</span><strong id="gauge-value">1.00×</strong></div></div><div class="gauge-caption" id="gauge-caption">Your take-home pay covers the modeled budget.</div></div><div class="result-figures"><div class="result-figure"><span>Monthly leftover</span><strong id="leftover-value">$0</strong><small id="leftover-note">after the selected model</small></div><div class="result-figure"><span>Break-even salary</span><strong id="break-even-value">$0</strong><small>gross annual income needed</small></div><div class="result-figure"><span>Housing share</span><strong id="housing-share-value">0%</strong><small>of essential expenses</small></div></div></div></article>
-      <article class="dash-panel comparison-panel"><div class="panel-top"><div><span class="card-kicker">LOCATION SWAP</span><h2 id="comparison-title">Same career. New coordinates.</h2></div><span class="card-icon">⇄</span></div><div class="compare-cards" id="compare-cards"></div><div class="compare-delta" id="compare-delta"></div></article>
+      <article class="dash-panel comparison-panel"><div class="panel-top"><div><span class="card-kicker">LOCATION SWAP</span><h2 id="comparison-title">Same occupation. New coordinates.</h2></div><span class="card-icon">⇄</span></div><div class="compare-cards" id="compare-cards"></div><div class="compare-delta" id="compare-delta"></div></article>
     </section>
 
     <section class="dashboard-grid chart-grid">
@@ -68,6 +69,6 @@
   </main>
 
   <dialog id="assumptions-dialog"><div class="dialog-inner"><button class="dialog-close" id="assumptions-close">×</button><p class="eyebrow">Calculation notes</p><h2>What this model is doing</h2><p>The model combines BLS occupation wages, BEA regional price levels, Census ACS housing context, BLS CPI-U category changes, and documented household assumptions. Observed source fields are kept separate from the modeled budget choices so each result can be read as a transparent affordability scenario.</p><div class="formula-card"><span>Affordability ratio</span><strong>Take-home income ÷ modeled monthly budget</strong></div><div class="formula-card"><span>Monthly leftover</span><strong>Take-home income − modeled monthly budget</strong></div><div class="formula-card"><span>Same-home test</span><strong>Bedroom-specific rent changes by state while bathroom count and square footage define the standardized home profile</strong></div><p class="dialog-small">This is a transparent scenario estimate, not financial advice. Sources, transformations, dropped rows, and assumptions are documented in the project data contract.</p></div></dialog>
-  <script src="data/prototype-data.js"></script><script src="data/source-data.js"></script><script src="assets/us_map-inline.js"></script><script src="app.js"></script>
+  <script src="data/source-data.js"></script><script src="assets/us_map-inline.js"></script><script src="app.js"></script>
 </body>
 </html>
