@@ -98,9 +98,9 @@ def stable_career_id(title: str, code: str) -> str:
     lowered = title.lower()
     aliases = {
         "nurse": ("registered nurse", "registered nurses"),
-        "developer": ("software developer", "web developer"),
+        "developer": ("software developers, applications", "software developer"),
         "teacher": ("secondary school teacher", "high school teacher"),
-        "analyst": ("data scientist", "operations research analyst"),
+        "analyst": ("operations research analyst", "data scientist"),
         "electrician": ("electrician",),
         "mechanic": ("automotive service technician", "automotive technician"),
         "retail": ("first-line supervisors of retail sales workers",),
@@ -172,11 +172,14 @@ def make_states(frame: pd.DataFrame) -> list[dict[str, object]]:
 
 def make_careers(frame: pd.DataFrame) -> tuple[list[dict[str, object]], list[str]]:
     careers: list[dict[str, object]] = []
+    used_ids: set[str] = set()
     for code, occupation_frame in frame.groupby("occupation_code", sort=True):
         title = str(occupation_frame["occupation_title"].dropna().iloc[0])
         family = occupation_family(code)
         latest = occupation_frame[occupation_frame.year == occupation_frame.year.max()]
-        base = numeric(latest["annual_median_wage"].median()) or 0.0
+        base = numeric(latest["annual_median_wage"].median())
+        if base is None:
+            base = numeric(occupation_frame["annual_median_wage"].median()) or 0.0
         wages: dict[str, dict[str, dict[str, float | None]]] = {}
         for (state, year), rows in occupation_frame.groupby(["state_code", "year"]):
             wages.setdefault(state, {})[str(int(year))] = {
@@ -184,8 +187,12 @@ def make_careers(frame: pd.DataFrame) -> tuple[list[dict[str, object]], list[str
                 "median": numeric(rows["annual_median_wage"].median()),
                 "upper": numeric(rows["annual_p75_wage"].median()),
             }
+        identifier = stable_career_id(title, code)
+        if identifier in used_ids:
+            identifier = career_id(code)
+        used_ids.add(identifier)
         careers.append({
-            "id": stable_career_id(title, code),
+            "id": identifier,
             "name": title,
             "family": family,
             "icon": career_icon(family),
@@ -195,10 +202,10 @@ def make_careers(frame: pd.DataFrame) -> tuple[list[dict[str, object]], list[str
         })
 
     keyword_groups = {
-        "nurse": ("registered nurse", "nursing"),
-        "developer": ("software developer", "web developer"),
+        "nurse": ("registered nurse",),
+        "developer": ("software developers, applications", "software developer"),
         "teacher": ("secondary school teachers", "high school teachers"),
-        "analyst": ("data scientist", "operations research analyst"),
+        "analyst": ("operations research analysts",),
         "electrician": ("electrician",),
     }
     featured: list[str] = []
@@ -220,6 +227,7 @@ def build_payload(frame: pd.DataFrame) -> dict[str, object]:
             "statusLabel": "Source-backed data · validated panel",
             "statusScope": "This view uses the validated occupation × state × year panel plus clearly labeled household and budget assumptions.",
             "statusNote": "These calculations use the validated occupation × state × year panel. Taxes, household size, savings, bathrooms, square footage, and discretionary spending remain explicit scenario assumptions.",
+            "sourceNote": "Observed inputs come from BLS OEWS, BLS CPI-U, BEA Regional Price Parities, and Census ACS summary files. The official 2020 ACS 5-year summary file is used because Census did not publish a standard 2020 ACS 1-year release.",
             "sourceBacked": True,
         },
         "years": years,
@@ -266,7 +274,16 @@ def main() -> None:
     missing = required - set(frame.columns)
     if missing:
         raise ValueError(f"Validated panel is missing web fields: {sorted(missing)}")
-    if frame[["annual_median_wage", "median_gross_rent_1br", "rpp_all_items", "cpi_all"]].isna().any().any():
+    browser_columns = [
+        "state_code", "year", "occupation_code", "occupation_title", "annual_p25_wage",
+        "annual_median_wage", "annual_p75_wage", "median_gross_rent", "median_gross_rent_0br",
+        "median_gross_rent_1br", "median_gross_rent_2br", "median_gross_rent_3br", "rpp_all_items",
+        "rpp_goods", "rpp_rents", "rpp_utilities", "rpp_other_services", "cpi_all", "cpi_food",
+        "cpi_shelter", "cpi_transport", "cpi_medical",
+    ]
+    frame = frame[browser_columns].copy()
+    critical = ["median_gross_rent_1br", "rpp_all_items", "cpi_all"]
+    if frame[critical].isna().any().any():
         raise ValueError("Validated panel contains missing values in browser-critical fields.")
     payload = build_payload(frame)
     args.output.parent.mkdir(parents=True, exist_ok=True)

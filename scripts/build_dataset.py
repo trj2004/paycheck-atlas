@@ -5,19 +5,22 @@ Run from the fda-python repository root:
     uv run python ..\\paycheck-atlas\\scripts\\build_dataset.py --help
 
 The BLS OEWS and CPI endpoints are official BLS sources. The ACS and BEA
-requests are official APIs; Census requires a CENSUS_API_KEY in this
-environment and BEA requires a BEA_API_KEY. The final build is intentionally
-strict: it will not write a finished panel when a required source is missing.
-Use --allow-missing-rpp only for debugging the wage/ACS join locally.
+inputs use official public summary files and the official BEA SARPP ZIP
+archive, with API-key fallbacks supported for local rebuilds. The final build
+is intentionally strict: it will not write a finished panel when a required
+source is missing. Use --allow-missing-rpp only for debugging the wage/ACS
+join locally.
 """
 
 from __future__ import annotations
 
 import argparse
+import csv
 import io
 import json
 import logging
 import os
+import time
 import zipfile
 from pathlib import Path
 
@@ -65,16 +68,104 @@ STATE_NAMES = {
     "WISCONSIN": "WI", "WYOMING": "WY",
 }
 
+STATE_ARCHIVE_NAMES = {
+    "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas",
+    "CA": "California", "CO": "Colorado", "CT": "Connecticut", "DE": "Delaware",
+    "DC": "DistrictofColumbia", "FL": "Florida", "GA": "Georgia", "HI": "Hawaii",
+    "ID": "Idaho", "IL": "Illinois", "IN": "Indiana", "IA": "Iowa", "KS": "Kansas",
+    "KY": "Kentucky", "LA": "Louisiana", "ME": "Maine", "MD": "Maryland",
+    "MA": "Massachusetts", "MI": "Michigan", "MN": "Minnesota", "MS": "Mississippi",
+    "MO": "Missouri", "MT": "Montana", "NE": "Nebraska", "NV": "Nevada",
+    "NH": "NewHampshire", "NJ": "NewJersey", "NM": "NewMexico", "NY": "NewYork",
+    "NC": "NorthCarolina", "ND": "NorthDakota", "OH": "Ohio", "OK": "Oklahoma",
+    "OR": "Oregon", "PA": "Pennsylvania", "RI": "RhodeIsland", "SC": "SouthCarolina",
+    "SD": "SouthDakota", "TN": "Tennessee", "TX": "Texas", "UT": "Utah",
+    "VT": "Vermont", "VA": "Virginia", "WA": "Washington", "WV": "WestVirginia",
+    "WI": "Wisconsin", "WY": "Wyoming",
+}
+
+ACS_FIELDS = [
+    "median_gross_rent", "median_home_value", "median_household_income", "population",
+    "median_gross_rent_0br", "median_gross_rent_1br", "median_gross_rent_2br",
+    "median_gross_rent_3br", "median_gross_rent_4br", "median_gross_rent_5plus_br",
+]
+ACS_TABLE_COLUMNS = {
+    "B25064": {"B25064_001E": "median_gross_rent"},
+    "B25077": {"B25077_001E": "median_home_value"},
+    "B19013": {"B19013_001E": "median_household_income"},
+    "B01003": {"B01003_001E": "population"},
+    "B25031": {
+        "B25031_002E": "median_gross_rent_0br",
+        "B25031_003E": "median_gross_rent_1br",
+        "B25031_004E": "median_gross_rent_2br",
+        "B25031_005E": "median_gross_rent_3br",
+        "B25031_006E": "median_gross_rent_4br",
+        "B25031_007E": "median_gross_rent_5plus_br",
+    },
+}
+
+# The Census Bureau did not publish a standard ACS 1-year summary file for
+# 2020. Its official public substitute for this panel is the 2020 ACS 5-year
+# table-based summary file. We keep the product distinction in the panel so it
+# can be disclosed in the website methodology.
+ACS_TABLE_BASES = {
+    **{year: "https://www2.census.gov/programs-surveys/acs/summary_file/"
+              f"{year}/prototype/1YRData/" for year in (2018, 2019)},
+    2020: "https://www2.census.gov/programs-surveys/acs/summary_file/2020/prototype/5YRData/",
+    **{year: "https://www2.census.gov/programs-surveys/acs/summary_file/"
+              f"{year}/table-based-SF/data/1YRData/" for year in (2021, 2022, 2023, 2024)},
+}
+ACS_TABLE_PERIOD = {year: ("5y" if year == 2020 else "1y") for year in ACS_TABLE_BASES}
+
+# Sequence-based ACS summary files used before the table-based release. The
+# positions are verified against each year's official Summary File Templates.
+LEGACY_SEQUENCE_POSITIONS = {
+    2015: {
+        "B01003": {"B01003_001E": 129},
+        "B19013": {"B19013_001E": 176},
+        "B25031": {f"B25031_{number:03d}E": 133 + number for number in range(2, 8)},
+        "B25064": {"B25064_001E": 117},
+        "B25077": {"B25077_001E": 98},
+    },
+    2016: {
+        "B01003": {"B01003_001E": 129},
+        "B19013": {"B19013_001E": 176},
+        "B25031": {f"B25031_{number:03d}E": 133 + number for number in range(2, 8)},
+        "B25064": {"B25064_001E": 117},
+        "B25077": {"B25077_001E": 98},
+    },
+    2017: {
+        "B01003": {"B01003_001E": 129},
+        "B19013": {"B19013_001E": 176},
+        "B25031": {f"B25031_{number:03d}E": 133 + number for number in range(2, 8)},
+        "B25064": {"B25064_001E": 117},
+        "B25077": {"B25077_001E": 98},
+    },
+}
+LEGACY_SEQUENCE_NUMBERS = {
+    2015: {"B01003": 3, "B19013": 77, "B25031": 139, "B25064": 141, "B25077": 142},
+    2016: {"B01003": 3, "B19013": 78, "B25031": 140, "B25064": 142, "B25077": 143},
+    2017: {"B01003": 3, "B19013": 78, "B25031": 140, "B25064": 142, "B25077": 143},
+}
+
 
 def fetch_bytes(url: str, target: Path, force: bool = False) -> bytes:
     """Download a public file once and keep a local raw copy."""
     if target.exists() and not force:
         return target.read_bytes()
     target.parent.mkdir(parents=True, exist_ok=True)
-    response = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=90)
-    response.raise_for_status()
-    target.write_bytes(response.content)
-    return response.content
+    for attempt in range(6):
+        response = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=90)
+        if response.status_code == 429:
+            delay = 5 * (attempt + 1)
+            logging.warning("Public source rate-limited request; retrying in %ss: %s", delay, url)
+            time.sleep(delay)
+            continue
+        response.raise_for_status()
+        target.write_bytes(response.content)
+        time.sleep(0.15)
+        return response.content
+    raise RuntimeError(f"Public source continued rate-limiting after retries: {url}")
 
 
 def find_header_row(raw: pd.DataFrame) -> int:
@@ -87,6 +178,9 @@ def find_header_row(raw: pd.DataFrame) -> int:
 
 def read_bls_year(year: int, force: bool = False) -> pd.DataFrame:
     """Read the official BLS state OEWS workbook for one May survey year."""
+    parsed_cache = RAW_DIR / f"bls_state_{year}_parsed.parquet"
+    if parsed_cache.exists() and not force:
+        return pd.read_parquet(parsed_cache)
     short_year = str(year)[-2:]
     url = f"https://www.bls.gov/oes/special-requests/oesm{short_year}st.zip"
     archive_path = RAW_DIR / f"bls_state_{year}.zip"
@@ -99,7 +193,8 @@ def read_bls_year(year: int, force: bool = False) -> pd.DataFrame:
         ]
         if not candidates:
             raise ValueError(f"No Excel workbook found in {url}.")
-        workbook = archive.read(candidates[0])
+        state_candidates = [name for name in candidates if "state" in name.lower()]
+        workbook = archive.read(sorted(state_candidates or candidates)[0])
 
     excel = pd.ExcelFile(io.BytesIO(workbook))
     frames: list[pd.DataFrame] = []
@@ -132,7 +227,7 @@ def read_bls_year(year: int, force: bool = False) -> pd.DataFrame:
     data["state_code"] = state_text.map(STATE_NAMES)
     data.loc[data["state_code"].isna(), "state_code"] = state_text.where(state_text.isin(STATE_FIPS.values()))
     data.loc[data["state_code"].isna(), "state_code"] = (
-        data["source_sheet"].astype("string").str.upper().str.extract(r"\b([A-Z]{2})\b", expand=False)
+        data["SOURCE_SHEET"].astype("string").str.upper().str.extract(r"\b([A-Z]{2})\b", expand=False)
     )
 
     rename = {
@@ -164,16 +259,101 @@ def read_bls_year(year: int, force: bool = False) -> pd.DataFrame:
             data[column].astype("string").str.replace(",", "", regex=False).replace({"*": pd.NA, "#": pd.NA}),
             errors="coerce",
         )
-    return data[required].drop_duplicates(["state_code", "year", "occupation_code"])
+    parsed = data[required].drop_duplicates(["state_code", "year", "occupation_code"])
+    parsed.to_parquet(parsed_cache, index=False)
+    return parsed
+
+
+def _normalize_acs_frame(frame: pd.DataFrame, year: int, product: str) -> pd.DataFrame:
+    """Apply the common state/year schema to API or static ACS results."""
+    frame = frame.copy()
+    frame["year"] = year
+    frame["acs_product"] = product
+    frame["state_code"] = frame["state_code"].map(lambda value: str(value).upper())
+    for column in ACS_FIELDS:
+        frame[column] = pd.to_numeric(frame[column], errors="coerce")
+    return frame[["state_code", "year", "NAME", *ACS_FIELDS, "acs_product"]]
+
+
+def read_acs_table_based_year(year: int, force: bool = False) -> pd.DataFrame:
+    """Read state rows from the official Census table-based summary files."""
+    base_url = ACS_TABLE_BASES[year]
+    period = ACS_TABLE_PERIOD[year]
+    product = "ACS 5-year" if period == "5y" else "ACS 1-year"
+    frames: list[pd.DataFrame] = []
+    for table, columns in ACS_TABLE_COLUMNS.items():
+        filename = f"acsdt{period}{year}-{table.lower()}.dat"
+        content = fetch_bytes(base_url + filename, RAW_DIR / filename, force=force)
+        table_frame = pd.read_csv(io.BytesIO(content), sep="|", dtype="string", encoding="utf-8")
+        table_frame.columns = [str(column).lstrip("#") for column in table_frame.columns]
+        if "GEO_ID" not in table_frame.columns:
+            raise ValueError(f"ACS {year} table {table} has no GEO_ID column.")
+        table_frame["state_fips"] = table_frame["GEO_ID"].str.extract(r"0400000US(\d{2})", expand=False)
+        table_frame = table_frame[table_frame["state_fips"].isin(STATE_FIPS)].copy()
+        source_columns: dict[str, str] = {}
+        for variable in columns:
+            source = variable
+            if source not in table_frame.columns:
+                match = pd.Series([variable]).str.extract(r"^(B\d+)_([0-9]{3})E$").iloc[0]
+                alternate = f"{match.iloc[0]}_E{match.iloc[1]}" if match.notna().all() else variable
+                source = alternate if alternate in table_frame.columns else variable
+            if source not in table_frame.columns:
+                raise KeyError(f"ACS {year} table {table} is missing {variable}.")
+            source_columns[source] = columns[variable]
+        table_frame = table_frame[["state_fips", *source_columns]].rename(columns=source_columns)
+        frames.append(table_frame)
+
+    frame = frames[0]
+    for table_frame in frames[1:]:
+        frame = frame.merge(table_frame, on="state_fips", how="outer", validate="one_to_one")
+    frame["state_code"] = frame["state_fips"].map(STATE_FIPS)
+    frame["NAME"] = frame["state_code"].map({code: name.title() for name, code in STATE_NAMES.items()})
+    return _normalize_acs_frame(frame, year, product)
+
+
+def _read_legacy_sequence_state(content: bytes, year: int, state_code: str, sequence: int) -> list[str]:
+    """Return the official state-level estimate row from one legacy sequence ZIP."""
+    with zipfile.ZipFile(io.BytesIO(content)) as archive:
+        estimate_files = [name for name in archive.namelist() if name.startswith("e") and name.endswith(".txt")]
+        if not estimate_files:
+            raise ValueError(f"ACS {year} sequence {sequence} has no estimate text file.")
+        with archive.open(sorted(estimate_files)[0]) as raw_file:
+            for row in csv.reader(io.TextIOWrapper(raw_file, encoding="utf-8")):
+                if len(row) > 5 and row[5] == "0000001":
+                    return row
+    raise ValueError(f"ACS {year} {state_code} sequence {sequence} has no state-level row.")
+
+
+def read_acs_legacy_year(year: int, force: bool = False) -> pd.DataFrame:
+    """Read 2015–2017 state rows from the official sequence-based archives."""
+    positions = LEGACY_SEQUENCE_POSITIONS[year]
+    sequence_numbers = LEGACY_SEQUENCE_NUMBERS[year]
+    records: list[dict[str, object]] = []
+    for fips, state_code in STATE_FIPS.items():
+        state_name = next(name for name, code in STATE_NAMES.items() if code == state_code).title()
+        record: dict[str, object] = {"state_code": state_code, "NAME": state_name}
+        for table, variable_positions in positions.items():
+            sequence = sequence_numbers[table]
+            archive_name = f"acs_{year}_{state_code.lower()}_{sequence:04d}.zip"
+            archive_path = RAW_DIR / "acs_legacy" / archive_name
+            url = (
+                f"https://www2.census.gov/programs-surveys/acs/summary_file/{year}/data/"
+                f"1_year_seq_by_state/{STATE_ARCHIVE_NAMES[state_code]}/"
+                f"{year}1{state_code.lower()}{sequence:04d}000.zip"
+            )
+            content = fetch_bytes(url, archive_path, force=force)
+            row = _read_legacy_sequence_state(content, year, state_code, sequence)
+            for variable, position in variable_positions.items():
+                field = ACS_TABLE_COLUMNS[table][variable]
+                record[field] = row[position] if position < len(row) else pd.NA
+        records.append(record)
+    frame = pd.DataFrame(records)
+    return _normalize_acs_frame(frame, year, "ACS 1-year")
 
 
 def read_acs_year(year: int, force: bool = False) -> pd.DataFrame:
-    """Read state-level ACS housing and income context."""
-    variables = ",".join([
-        "NAME", "B25064_001E", "B25077_001E", "B19013_001E", "B01003_001E",
-        "B25031_002E", "B25031_003E", "B25031_004E", "B25031_005E",
-        "B25031_006E", "B25031_007E",
-    ])
+    """Read state-level ACS housing and income context from official sources."""
+    variables = ",".join(["NAME", *[variable for columns in ACS_TABLE_COLUMNS.values() for variable in columns]])
     url = f"https://api.census.gov/data/{year}/acs/acs1"
     params = {"get": variables, "for": "state:*"}
     api_key = os.getenv("CENSUS_API_KEY")
@@ -182,42 +362,29 @@ def read_acs_year(year: int, force: bool = False) -> pd.DataFrame:
     cache = RAW_DIR / f"acs_state_{year}.json"
     if cache.exists() and not force:
         payload = json.loads(cache.read_text(encoding="utf-8"))
-    else:
-        if not api_key:
-            raise RuntimeError(
-                "CENSUS_API_KEY is required to download ACS state data. "
-                "Set it in the local shell; do not commit or share the key."
-            )
+        if not isinstance(payload, list) or len(payload) < 2:
+            raise ValueError(f"ACS {year} response was not a tabular state result.")
+        frame = pd.DataFrame(payload[1:], columns=payload[0])
+        frame["state_code"] = frame["state"].map(STATE_FIPS)
+        frame = frame.rename(columns={variable: field for columns in ACS_TABLE_COLUMNS.values() for variable, field in columns.items()})
+        return _normalize_acs_frame(frame, year, "ACS 1-year")
+    if api_key:
         response = requests.get(url, params=params, headers={"User-Agent": USER_AGENT}, timeout=90)
         response.raise_for_status()
         cache.parent.mkdir(parents=True, exist_ok=True)
         cache.write_text(response.text, encoding="utf-8")
-        payload = response.json()
-    if not isinstance(payload, list) or len(payload) < 2:
-        raise ValueError(f"ACS {year} response was not a tabular state result.")
-    frame = pd.DataFrame(payload[1:], columns=payload[0])
-    frame["state_code"] = frame["state"].map(STATE_FIPS)
-    frame["year"] = year
-    frame = frame.rename(columns={
-        "B25064_001E": "median_gross_rent",
-        "B25077_001E": "median_home_value",
-        "B19013_001E": "median_household_income",
-        "B01003_001E": "population",
-        "B25031_002E": "median_gross_rent_0br",
-        "B25031_003E": "median_gross_rent_1br",
-        "B25031_004E": "median_gross_rent_2br",
-        "B25031_005E": "median_gross_rent_3br",
-        "B25031_006E": "median_gross_rent_4br",
-        "B25031_007E": "median_gross_rent_5plus_br",
-    })
-    numeric_columns = [
-        "median_gross_rent", "median_home_value", "median_household_income", "population",
-        "median_gross_rent_0br", "median_gross_rent_1br", "median_gross_rent_2br",
-        "median_gross_rent_3br", "median_gross_rent_4br", "median_gross_rent_5plus_br",
-    ]
-    for column in numeric_columns:
-        frame[column] = pd.to_numeric(frame[column], errors="coerce")
-    return frame[["state_code", "year", "NAME", *numeric_columns]]
+        frame = pd.DataFrame(response.json()[1:], columns=response.json()[0])
+        frame["state_code"] = frame["state"].map(STATE_FIPS)
+        frame = frame.rename(columns={variable: field for columns in ACS_TABLE_COLUMNS.values() for variable, field in columns.items()})
+        return _normalize_acs_frame(frame, year, "ACS 1-year")
+    if year in LEGACY_SEQUENCE_POSITIONS:
+        return read_acs_legacy_year(year, force=force)
+    if year in ACS_TABLE_BASES:
+        return read_acs_table_based_year(year, force=force)
+    raise RuntimeError(
+        f"No official no-key ACS cache is configured for {year}. Set CENSUS_API_KEY locally "
+        "or add the public Census summary-file path before building."
+    )
 
 
 def read_cpi(years: list[int], force: bool = False) -> pd.DataFrame:
@@ -243,16 +410,29 @@ def read_cpi(years: list[int], force: bool = False) -> pd.DataFrame:
     if payload.get("status") != "REQUEST_SUCCEEDED":
         raise ValueError(f"BLS CPI request failed: {payload.get('message', 'unknown error')}")
     series_by_id = {series_id: name for name, series_id in CPI_SERIES.items()}
-    records: list[dict[str, object]] = []
+    annual_values: dict[tuple[int, str], list[float]] = {}
     for series in payload.get("Results", {}).get("series", []):
         field = series_by_id.get(series.get("seriesID"))
         if not field:
             continue
         for row in series.get("data", []):
-            if row.get("period") != "M13":
+            period = str(row.get("period", ""))
+            if period != "M13" and not period.startswith("M"):
                 continue
-            records.append({"year": int(row["year"]), field: pd.to_numeric(row.get("value"), errors="coerce")})
-    frame = pd.DataFrame(records).groupby("year", as_index=False).first()
+            value = pd.to_numeric(row.get("value"), errors="coerce")
+            if pd.isna(value):
+                continue
+            key = (int(row["year"]), field)
+            annual_values.setdefault(key, []).append(float(value))
+    records: list[dict[str, object]] = []
+    for year in years:
+        record: dict[str, object] = {"year": year}
+        for field in CPI_SERIES:
+            values = annual_values.get((year, field), [])
+            if values:
+                record[field] = values[0] if len(values) == 1 else sum(values) / len(values)
+        records.append(record)
+    frame = pd.DataFrame(records)
     required = ["year", *CPI_SERIES.keys()]
     missing = set(required) - set(frame.columns)
     if missing:
@@ -265,8 +445,32 @@ def read_cpi(years: list[int], force: bool = False) -> pd.DataFrame:
 
 
 def read_bea_rpp_year(year: int, force: bool = False, allow_missing: bool = False) -> pd.DataFrame:
-    """Read BEA SARPP lines when a BEA API key is available."""
+    """Read BEA SARPP lines from the official ZIP cache or API."""
     columns = ["state_code", "year", "rpp_all_items", "rpp_goods", "rpp_rents", "rpp_utilities", "rpp_other_services"]
+    archive_path = RAW_DIR / "bea_sarpp.zip"
+    line_names = {1: "rpp_all_items", 2: "rpp_goods", 3: "rpp_rents", 4: "rpp_utilities", 5: "rpp_other_services"}
+
+    if archive_path.exists() and not force:
+        with zipfile.ZipFile(archive_path) as archive:
+            with archive.open("SARPP_STATE_2008_2024.csv") as csv_file:
+                frame = pd.read_csv(csv_file, dtype={"GeoFIPS": "string"}, skipinitialspace=True)
+        year_column = str(year)
+        if year_column not in frame.columns:
+            raise ValueError(f"The cached BEA SARPP archive has no {year} column.")
+        frame["state_code"] = (
+            frame["GeoFIPS"].astype("string").str.strip().str.replace('"', "", regex=False).str[:2].map(STATE_FIPS)
+        )
+        frame["LineCode"] = pd.to_numeric(frame["LineCode"], errors="coerce")
+        frame = frame[frame["state_code"].notna() & frame["LineCode"].isin(line_names)]
+        values = frame.pivot_table(index="state_code", columns="LineCode", values=year_column, aggfunc="first")
+        records = []
+        for state_code, row in values.iterrows():
+            record = {"state_code": state_code, "year": year}
+            for line_code, field in line_names.items():
+                record[field] = pd.to_numeric(row.get(line_code), errors="coerce")
+            records.append(record)
+        return pd.DataFrame(records, columns=columns)
+
     api_key = os.getenv("BEA_API_KEY")
     if not api_key:
         if not allow_missing:
@@ -278,7 +482,6 @@ def read_bea_rpp_year(year: int, force: bool = False, allow_missing: bool = Fals
         return pd.DataFrame(columns=columns)
 
     records: dict[str, dict[str, object]] = {}
-    line_names = {1: "rpp_all_items", 2: "rpp_goods", 3: "rpp_rents", 4: "rpp_utilities", 5: "rpp_other_services"}
     for line_code, field in line_names.items():
         response = requests.get(
             "https://apps.bea.gov/api/data/",

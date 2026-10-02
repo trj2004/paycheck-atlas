@@ -4,13 +4,13 @@ An interactive exploration of how location changes the purchasing power of a ful
 
 ## Current checkpoint
 
-The report page and dashboard are currently a design prototype. They use clearly labeled illustrative scenario data while the source-backed panel is being assembled and validated. The production build is intentionally kept on a feature branch until every requested year, state, occupation, CPI series, and regional price-level join passes validation.
+The feature branch contains the source-backed build: 361,780 validated occupation × state × year rows across 2015–2024, 51 state/DC contexts, and 988 occupations. The published `main` branch can remain the submitted design checkpoint until this branch is reviewed and merged.
 
-The final dataset will use annual occupation wages, regional price levels, CPI categories, standardized housing benchmarks, and household expense assumptions. The intended research question is:
+The project question is:
 
 > How does location affect the purchasing power of a full-time salary?
 
-The prototype also demonstrates a second lens: whether a paycheck has kept up with the cost of a basic life over a ten-year window (2015–2024), and what the same bedroom/bathroom/square-footage housing profile costs in different states. Those screens are ready to receive the validated panel; they should not be read as empirical findings yet.
+The site adds two connected lenses: whether a paycheck has kept up with the cost of a basic life over 2015–2024, and what the same bedroom/bathroom/square-footage housing profile costs in different states. Observed wages, price levels, CPI indexes, and ACS housing context are kept separate from explicit household and budget assumptions.
 
 ## Files
 
@@ -18,8 +18,9 @@ The prototype also demonstrates a second lens: whether a paycheck has kept up wi
 - `dashboard.html` — interactive scenario dashboard.
 - `styles.css` — shared dark financial/home design system.
 - `app.js` — calculations, controls, rankings, and visual rendering.
-- `data/prototype-data.js` — temporary illustrative inputs for the design checkpoint.
-- The prototype dashboard includes a 50-state click map, map measure toggles, a time scrubber, and a selected-state story card.
+- `data/prototype-data.js` — safe fallback data if the generated source file is unavailable.
+- `data/source-data.js` — generated browser contract from the validated panel.
+- The dashboard includes a 50-state click map, map measure toggles, a time scrubber, a selected-state story card, full occupation search, and source-backed scenario calculations.
 - `data/README.md` — panel grain, source map, field definitions, and reproducibility notes.
 - `scripts/build_dataset.py` — source-backed BLS/BEA/ACS panel builder and rubric validator.
 
@@ -31,6 +32,6 @@ Open `index.html` for the report homepage and `dashboard.html` for the separate 
 
 The source-backed panel is designed at one occupation × state × year per row. Ten annual periods across roughly 50 states and hundreds of occupations should provide far more than the 50,000-row class requirement. The long grain also keeps the data reusable for the separate future Excel project, but the website itself is focused on the affordability analysis rather than pivot-table features.
 
-Run the pipeline from the `fda-python` repository root with `uv run python ..\paycheck-atlas\scripts\build_dataset.py`. The script caches raw downloads, joins the sources, checks the required row count/group/time coverage, rejects duplicate keys and incomplete context fields, and writes processed CSV/Parquet outputs. The final build requires local `CENSUS_API_KEY` and `BEA_API_KEY` environment variables. Do not commit or share either key. `--allow-missing-rpp` exists only for debugging and is not a final-data workflow.
+Run the pipeline from the `fda-python` repository root with `uv run python ..\paycheck-atlas\scripts\build_dataset.py`, then run `uv run python ..\paycheck-atlas\scripts\build_web_data.py`. The builder caches official raw downloads, joins the sources, checks row count/group/time coverage, rejects duplicate keys and incomplete context fields, and writes processed CSV/Parquet outputs. Public official summary-file caches mean Census and BEA API keys are not required for this validated build; API keys remain supported as local-only fallbacks and must never be committed or shared. `--allow-missing-rpp` exists only for debugging and is not a final-data workflow.
 
-The prototype is not the final analytical dataset. It is intentionally separated from the later source-backed data pipeline so design decisions can be evaluated first.
+The 2020 ACS caveat is documented in the data contract: Census did not publish a standard ACS 1-year release for 2020, so the official 2020 ACS 5-year summary file is used for that year and labeled as such.

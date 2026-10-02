@@ -569,7 +569,7 @@
       : 'The paycheck rose ' + payChange + '% while the basic-life plan rose ' + budgetChange + '%—purchasing power improved.';
     var insightSelector = target.id === 'dashboard-trend' ? '#dashboard-trend-insight' : '#home-trend-insight';
     var startYear = DATA.years[0];
-    setText(insightSelector, insight + ' Both lines are indexed to ' + startYear + ' = 100 using prototype CPI-style inputs.');
+    setText(insightSelector, insight + ' Both lines are indexed to ' + startYear + ' = 100 using BLS CPI-U annual averages.');
     if (target.id === 'dashboard-trend') {
       setText('#trend-start', startYear + ' = 100');
       setText('#trend-end', String(latestYear()));
@@ -1059,7 +1059,7 @@
       ['Best modeled ratio', ratio(best.ratio), best.state.name + ' · ' + result.career.name],
       ['Breathing-room spread', money(spread), 'best vs. tightest state'],
       ['Housing share', percent(result.housingShare), 'of ' + result.state.name + ' essentials in this scenario'],
-      ['States in prototype', String(DATA.states.length), 'same lens across all states']
+      ['States in view', String(DATA.states.length), 'same lens across all states']
     ].map(function (card) {
       return '<article class="metric-card"><span class="metric-label">' + card[0] + '</span><strong class="metric-value">' + card[1] + '</strong><span class="metric-note">' + card[2] + '</span></article>';
     }).join('');
@@ -1165,7 +1165,7 @@
     var first = calculate({ careerId: result.career.id, stateCode: result.state.code, year: DATA.years[0], householdId: result.household.id, percentileKey: result.percentileKey, modeId: result.mode.id, housingId: result.housingId, customSalary: result.customSalary || '' });
     var last = calculate({ careerId: result.career.id, stateCode: result.state.code, year: latestYear(), householdId: result.household.id, percentileKey: result.percentileKey, modeId: result.mode.id, housingId: result.housingId, customSalary: result.customSalary || '' });
     setText('#home-time-year', String(year));
-    setText('#home-time-status', year === latestYear() ? 'LATEST PROTOTYPE YEAR' : result.state.name.toUpperCase() + ' · ' + result.career.name.toUpperCase());
+    setText('#home-time-status', year === latestYear() ? 'LATEST AVAILABLE YEAR' : result.state.name.toUpperCase() + ' · ' + result.career.name.toUpperCase());
     setText('#home-time-pay', money(timed.takeHome));
     setText('#home-time-cost', money(timed.monthlyBudget));
     setText('#home-time-leftover', signedMoney(timed.leftover));
