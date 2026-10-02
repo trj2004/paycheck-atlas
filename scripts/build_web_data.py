@@ -132,6 +132,11 @@ def make_cpi(frame: pd.DataFrame) -> list[dict[str, float | int]]:
 def make_states(frame: pd.DataFrame) -> list[dict[str, object]]:
     states: list[dict[str, object]] = []
     for code, state_frame in frame.groupby("state_code", sort=True):
+        # The supplied inline map is a 50-state map. DC remains in the
+        # analytical panel but is excluded from this geographic view so the
+        # count and the visual map agree.
+        if code == "DC":
+            continue
         rpp_by_year: dict[str, dict[str, float | None]] = {}
         rent_by_year: dict[str, dict[str, float | None]] = {}
         for row in state_frame.drop_duplicates("year").itertuples():
