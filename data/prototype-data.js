@@ -1,4 +1,11 @@
 window.PAYCHECK_ATLAS = {
+  metadata: {
+    status: "prototype",
+    statusLabel: "Visual prototype · illustrative scenario data",
+    statusScope: "The screens are ready for the validated source-backed panel; current values are illustrative and are not empirical findings.",
+    statusNote: "These live calculations currently use the clearly labeled illustrative inputs in the prototype data file. The same visual contract will be retained when the validated occupation × state × year panel replaces them.",
+    sourceBacked: false
+  },
   years: [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
   cpi: [
     { year: 2015, all: 88.9, housing: 91.2, food: 87.6, transport: 90.8, health: 90.5, utilities: 89.8, other: 89.6 },

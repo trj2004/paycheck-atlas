@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body data-page="home">
-  <div class="prototype-banner"><span class="pulse-dot"></span> Visual prototype · illustrative scenario data while the source-backed data pipeline is being connected</div>
+  <div class="prototype-banner"><span class="pulse-dot"></span><span data-status-label>Visual prototype · illustrative scenario data</span></div>
   <nav class="site-nav shell">
     <a class="brand" href="index.html"><span class="brand-mark">$</span><span>PAYCHECK<span class="brand-accent">ATLAS</span></span></a>
     <div class="nav-links"><a class="active" href="index.html">Report</a><a href="dashboard.html">Build your budget <span class="arrow">↗</span></a></div>
@@ -93,14 +93,14 @@
 
     <section class="signal-strip"><div class="shell signal-grid"><div><span class="signal-kicker">THE QUESTION</span><p>How much of a basic lifestyle can a full-time paycheck cover—and how does that change across America?</p></div><div class="signal-note"><span class="signal-line"></span><span>Income is only half of the story.<br><em>The rest is where you live.</em></span></div></div></section>
 
-    <section class="scope-strip shell" aria-label="Prototype scope"><div><span class="card-kicker">READ THIS FIRST</span><strong>One paycheck. Ten years. Fifty states.</strong><p>The prototype uses illustrative inputs to show the structure of the final analysis before the source-backed data is connected.</p></div><div class="scope-points"><span><b>2015–2024</b><small>annual time lens</small></span><span><b>4</b><small>home benchmarks</small></span><span><b>7</b><small>cost categories</small></span></div></section>
+    <section class="scope-strip shell" aria-label="Project scope"><div><span class="card-kicker">READ THIS FIRST</span><strong>One paycheck. Ten years. Fifty states.</strong><p data-status-scope>The screens are ready for the validated source-backed panel; current values are illustrative and are not empirical findings.</p></div><div class="scope-points"><span><b>2015–2024</b><small>annual time lens</small></span><span><b>4</b><small>home benchmarks</small></span><span><b>7</b><small>cost categories</small></span></div></section>
 
     <section class="passport-section shell">
       <div class="passport-intro"><p class="eyebrow">THE PAYCHECK PASSPORT</p><h2>Send one paycheck<br><span class="gradient-text">across America.</span></h2><p>Use one illustrative paycheck as a traveler. Choose a career, a home benchmark, and two places to see how the same workday changes when the coordinates change.</p><div class="persona-note"><span>FICTIONAL LENS</span><strong>A transparent scenario, not a real household.</strong></div><div class="question-stack"><div><span>01</span><strong>Does a higher salary create more room?</strong></div><div><span>02</span><strong>Which expenses change the answer?</strong></div><div><span>03</span><strong>What would the same life require elsewhere?</strong></div></div></div>
       <article class="passport-lab">
         <div class="passport-lab-head"><div><span class="card-kicker">LIVE PROTOTYPE SCENARIO</span><h3>One career. Two coordinates.</h3></div><span class="passport-stamp">MOVE IT</span></div>
         <div class="passport-controls"><label><span>Career</span><select id="home-career-select"></select></label><label><span>From</span><select id="home-state-a"></select></label><label><span>To</span><select id="home-state-b"></select></label><label><span>Home benchmark</span><select id="home-housing-select"></select></label></div>
-        <div class="career-deck-head"><span class="card-kicker">OR PICK THE CAREER CARD</span><span>Each card changes the paycheck entering the house.</span></div>
+        <div class="career-deck-head"><span class="card-kicker">OR PICK A FEATURED CAREER</span><span>Each card changes the paycheck entering the house. The dashboard contains the full occupation list.</span></div>
         <div class="career-deck" id="home-career-deck" aria-label="Career choices"></div>
         <div class="passport-route"><div class="route-line"><i></i><b class="route-plane">✦</b></div><div class="passport-place" id="home-passport-a"></div><div class="passport-place passport-place-b" id="home-passport-b"></div></div>
         <div class="passport-result" id="home-passport-result"></div>
@@ -192,7 +192,7 @@
         <article class="evidence-card"><div class="evidence-card-head"><span class="evidence-number">07</span><div><span class="card-kicker">TIME</span><h3>When did the affordability gap open?</h3></div></div><p>The decade view compares the growth of take-home pay with the growth of the modeled basic-life budget.</p><div class="evidence-chart" id="report-time-chart"></div><p class="evidence-finding" id="report-time-copy"></p></article>
         <article class="evidence-card"><div class="evidence-card-head"><span class="evidence-number">08</span><div><span class="card-kicker">THRESHOLD</span><h3>What is the minimum viable salary?</h3></div></div><p>The break-even salary translates the monthly plan into an annual income target for the selected place and lifestyle.</p><div class="threshold-visual" id="report-threshold-chart"></div><p class="evidence-finding" id="report-threshold-copy"></p></article>
       </div>
-      <div class="evidence-note"><span class="status-dot"></span><p><strong>Prototype status:</strong> these live calculations currently use the clearly labeled illustrative inputs in the prototype data file. The same visual contract will be retained when the source-backed occupation × state × year panel replaces them.</p><a href="dashboard.html">Stress-test every lens in the dashboard <span>↗</span></a></div>
+      <div class="evidence-note"><span class="status-dot"></span><p><strong data-status-note-label>Prototype status:</strong> <span data-status-note>These live calculations currently use the clearly labeled illustrative inputs in the prototype data file. The same visual contract will be retained when the validated occupation × state × year panel replaces them.</span></p><a href="dashboard.html">Stress-test every lens in the dashboard <span>↗</span></a></div>
     </section>
 
     <section class="time-machine-section shell" aria-labelledby="time-machine-title">
@@ -201,12 +201,13 @@
     </section>
 
     <section class="section shell" id="method">
-      <div class="section-heading"><div><p class="eyebrow">03 · The model</p><h2>Open the hood.<br><span class="soft-text">Trust the math.</span></h2></div><p class="section-intro">The final version will show the assumptions behind every number instead of hiding the model behind a polished interface.</p></div>
+      <div class="section-heading"><div><p class="eyebrow">03 · The model</p><h2>Open the hood.<br><span class="soft-text">Trust the math.</span></h2></div><p class="section-intro">The model separates observed public data from explicit scenario assumptions, so a polished interface never has to hide where a number came from.</p></div>
       <div class="model-grid"><div class="model-card"><span class="model-number">01</span><h3>Take-home pay</h3><p>Career wage, salary percentile, location, year, and a documented tax assumption.</p></div><div class="model-card"><span class="model-number">02</span><h3>Standard home</h3><p>Hold bedroom count, bathroom count, and approximate square footage constant so rent differences are easier to see.</p></div><div class="model-card"><span class="model-number">03</span><h3>Ten-year CPI lens</h3><p>Ten annual price points show whether the cost of a basic-life plan rose faster than the paycheck.</p></div><div class="model-card"><span class="model-number">04</span><h3>Room left</h3><p>Monthly leftover shows the dollars. The affordability ratio shows the scale of the gap.</p></div></div>
+      <div class="source-strip" aria-label="Data and assumption map"><div class="source-card"><span class="card-kicker">OBSERVED · WAGES</span><strong>BLS OEWS</strong><p>Annual occupation wages are joined by occupation, state, and year.</p><a href="https://www.bls.gov/oes/tables.htm" target="_blank" rel="noreferrer">View source ↗</a></div><div class="source-card"><span class="card-kicker">OBSERVED · PRICES</span><strong>BEA RPP + Census ACS</strong><p>Regional price levels and state housing context anchor the location comparison.</p><a href="https://apps.bea.gov/api/data/" target="_blank" rel="noreferrer">View source ↗</a></div><div class="source-card"><span class="card-kicker">OBSERVED · TIME</span><strong>BLS CPI-U</strong><p>Category indexes drive the ten-year cost-of-living lens.</p><a href="https://api.bls.gov/publicAPI/v2/timeseries/data/" target="_blank" rel="noreferrer">View source ↗</a></div><div class="source-card source-card-assumption"><span class="card-kicker">MODELED · TRANSPARENT</span><strong>Household plan</strong><p>Taxes, household size, savings, bathrooms, square footage, and discretionary spending are labeled assumptions—not observed facts.</p><span class="source-card-note">Read the method beside every result.</span></div></div>
       <div class="closing-cta"><div><p class="eyebrow">Ready to make it personal?</p><h3>Put a career, a place, and a life in the same frame.</h3></div><a class="button button-primary" href="dashboard.html">Enter the dashboard <span>↗</span></a></div>
     </section>
   </main>
-  <footer class="site-footer shell"><span>PAYCHECK ATLAS · prototype checkpoint</span><span>Built around one question: where does your paycheck go?</span></footer>
-  <script src="data/prototype-data.js"></script><script src="app.js"></script>
+  <footer class="site-footer shell"><span>PAYCHECK ATLAS · <span data-status-label>visual prototype</span></span><span>Built around one question: where does your paycheck go?</span></footer>
+  <script src="data/prototype-data.js"></script><script src="data/source-data.js"></script><script src="app.js"></script>
 </body>
 </html>

@@ -4,9 +4,11 @@ Run from the fda-python repository root:
 
     uv run python ..\\paycheck-atlas\\scripts\\build_dataset.py --help
 
-The BLS and ACS endpoints are public downloads. BEA's API requires a free
-BEA_API_KEY environment variable; the script keeps the RPP columns present
-and reports the missing join when that key is not supplied.
+The BLS OEWS and CPI endpoints are official BLS sources. The ACS and BEA
+requests are official APIs; Census requires a CENSUS_API_KEY in this
+environment and BEA requires a BEA_API_KEY. The final build is intentionally
+strict: it will not write a finished panel when a required source is missing.
+Use --allow-missing-rpp only for debugging the wage/ACS join locally.
 """
 
 from __future__ import annotations
@@ -26,6 +28,13 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 USER_AGENT = "Paycheck Atlas student research project"
+CPI_SERIES = {
+    "cpi_all": "CUSR0000SA0",
+    "cpi_food": "CUSR0000SAF1",
+    "cpi_shelter": "CUSR0000SAH1",
+    "cpi_transport": "CUSR0000SETB",
+    "cpi_medical": "CUSR0000SAM2",
+}
 
 STATE_FIPS = {
     "01": "AL", "02": "AK", "04": "AZ", "05": "AR", "06": "CA",
@@ -160,7 +169,11 @@ def read_bls_year(year: int, force: bool = False) -> pd.DataFrame:
 
 def read_acs_year(year: int, force: bool = False) -> pd.DataFrame:
     """Read state-level ACS housing and income context."""
-    variables = "NAME,B25064_001E,B25077_001E,B19013_001E,B01003_001E"
+    variables = ",".join([
+        "NAME", "B25064_001E", "B25077_001E", "B19013_001E", "B01003_001E",
+        "B25031_002E", "B25031_003E", "B25031_004E", "B25031_005E",
+        "B25031_006E", "B25031_007E",
+    ])
     url = f"https://api.census.gov/data/{year}/acs/acs1"
     params = {"get": variables, "for": "state:*"}
     api_key = os.getenv("CENSUS_API_KEY")
@@ -170,11 +183,18 @@ def read_acs_year(year: int, force: bool = False) -> pd.DataFrame:
     if cache.exists() and not force:
         payload = json.loads(cache.read_text(encoding="utf-8"))
     else:
+        if not api_key:
+            raise RuntimeError(
+                "CENSUS_API_KEY is required to download ACS state data. "
+                "Set it in the local shell; do not commit or share the key."
+            )
         response = requests.get(url, params=params, headers={"User-Agent": USER_AGENT}, timeout=90)
         response.raise_for_status()
         cache.parent.mkdir(parents=True, exist_ok=True)
         cache.write_text(response.text, encoding="utf-8")
         payload = response.json()
+    if not isinstance(payload, list) or len(payload) < 2:
+        raise ValueError(f"ACS {year} response was not a tabular state result.")
     frame = pd.DataFrame(payload[1:], columns=payload[0])
     frame["state_code"] = frame["state"].map(STATE_FIPS)
     frame["year"] = year
@@ -183,17 +203,77 @@ def read_acs_year(year: int, force: bool = False) -> pd.DataFrame:
         "B25077_001E": "median_home_value",
         "B19013_001E": "median_household_income",
         "B01003_001E": "population",
+        "B25031_002E": "median_gross_rent_0br",
+        "B25031_003E": "median_gross_rent_1br",
+        "B25031_004E": "median_gross_rent_2br",
+        "B25031_005E": "median_gross_rent_3br",
+        "B25031_006E": "median_gross_rent_4br",
+        "B25031_007E": "median_gross_rent_5plus_br",
     })
-    for column in ["median_gross_rent", "median_home_value", "median_household_income", "population"]:
+    numeric_columns = [
+        "median_gross_rent", "median_home_value", "median_household_income", "population",
+        "median_gross_rent_0br", "median_gross_rent_1br", "median_gross_rent_2br",
+        "median_gross_rent_3br", "median_gross_rent_4br", "median_gross_rent_5plus_br",
+    ]
+    for column in numeric_columns:
         frame[column] = pd.to_numeric(frame[column], errors="coerce")
-    return frame[["state_code", "year", "NAME", "median_gross_rent", "median_home_value", "median_household_income", "population"]]
+    return frame[["state_code", "year", "NAME", *numeric_columns]]
 
 
-def read_bea_rpp_year(year: int, force: bool = False) -> pd.DataFrame:
+def read_cpi(years: list[int], force: bool = False) -> pd.DataFrame:
+    """Read annual-average CPI-U indexes from the public BLS API."""
+    cache = RAW_DIR / "bls_cpi_annual.json"
+    if cache.exists() and not force:
+        payload = json.loads(cache.read_text(encoding="utf-8"))
+    else:
+        response = requests.post(
+            "https://api.bls.gov/publicAPI/v2/timeseries/data/",
+            json={
+                "seriesid": list(CPI_SERIES.values()),
+                "startyear": str(min(years)),
+                "endyear": str(max(years)),
+            },
+            headers={"User-Agent": USER_AGENT},
+            timeout=90,
+        )
+        response.raise_for_status()
+        payload = response.json()
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        cache.write_text(json.dumps(payload), encoding="utf-8")
+    if payload.get("status") != "REQUEST_SUCCEEDED":
+        raise ValueError(f"BLS CPI request failed: {payload.get('message', 'unknown error')}")
+    series_by_id = {series_id: name for name, series_id in CPI_SERIES.items()}
+    records: list[dict[str, object]] = []
+    for series in payload.get("Results", {}).get("series", []):
+        field = series_by_id.get(series.get("seriesID"))
+        if not field:
+            continue
+        for row in series.get("data", []):
+            if row.get("period") != "M13":
+                continue
+            records.append({"year": int(row["year"]), field: pd.to_numeric(row.get("value"), errors="coerce")})
+    frame = pd.DataFrame(records).groupby("year", as_index=False).first()
+    required = ["year", *CPI_SERIES.keys()]
+    missing = set(required) - set(frame.columns)
+    if missing:
+        raise ValueError(f"BLS CPI response is missing fields: {sorted(missing)}")
+    frame = frame[frame["year"].isin(years)]
+    if set(frame["year"]) != set(years):
+        missing_years = sorted(set(years) - set(frame["year"]))
+        raise ValueError(f"BLS CPI response is missing requested years: {missing_years}")
+    return frame[required].sort_values("year").reset_index(drop=True)
+
+
+def read_bea_rpp_year(year: int, force: bool = False, allow_missing: bool = False) -> pd.DataFrame:
     """Read BEA SARPP lines when a BEA API key is available."""
     columns = ["state_code", "year", "rpp_all_items", "rpp_goods", "rpp_rents", "rpp_utilities", "rpp_other_services"]
     api_key = os.getenv("BEA_API_KEY")
     if not api_key:
+        if not allow_missing:
+            raise RuntimeError(
+                "BEA_API_KEY is required for the final build because regional price levels "
+                "drive the location comparison. Set it locally; do not commit or share the key."
+            )
         logging.warning("BEA_API_KEY is not set; RPP columns will remain missing for %s.", year)
         return pd.DataFrame(columns=columns)
 
@@ -227,10 +307,14 @@ def read_bea_rpp_year(year: int, force: bool = False) -> pd.DataFrame:
     return pd.DataFrame(records.values(), columns=columns)
 
 
-def build(years: list[int], force: bool = False) -> pd.DataFrame:
+def build(years: list[int], force: bool = False, allow_missing_rpp: bool = False) -> pd.DataFrame:
     wage_frames = [read_bls_year(year, force=force) for year in years]
     acs_frames = [read_acs_year(year, force=force) for year in years]
-    rpp_frames = [read_bea_rpp_year(year, force=force) for year in years]
+    cpi = read_cpi(years, force=force)
+    rpp_frames = [
+        read_bea_rpp_year(year, force=force, allow_missing=allow_missing_rpp)
+        for year in years
+    ]
     wages = pd.concat(wage_frames, ignore_index=True)
     context = pd.concat(acs_frames, ignore_index=True)
     rpp = pd.concat([frame for frame in rpp_frames if not frame.empty], ignore_index=True) if any(not frame.empty for frame in rpp_frames) else pd.DataFrame()
@@ -240,17 +324,19 @@ def build(years: list[int], force: bool = False) -> pd.DataFrame:
     else:
         for column in ["rpp_all_items", "rpp_goods", "rpp_rents", "rpp_utilities", "rpp_other_services"]:
             panel[column] = pd.NA
+    panel = panel.merge(cpi, on="year", how="left", validate="many_to_one")
     panel["real_wage_at_national_price"] = panel["annual_median_wage"] / (panel["rpp_all_items"] / 100)
     panel["rent_share_of_median_income"] = panel["median_gross_rent"] * 12 / panel["median_household_income"]
     return panel.sort_values(["year", "state_code", "occupation_code"]).reset_index(drop=True)
 
 
-def validate(panel: pd.DataFrame, years: list[int]) -> None:
+def validate(panel: pd.DataFrame, years: list[int], allow_missing_rpp: bool = False) -> None:
     required = {
         "state_code", "year", "occupation_code", "occupation_title",
         "annual_mean_wage", "annual_median_wage", "annual_p25_wage",
         "annual_p75_wage", "median_gross_rent", "median_household_income",
-        "rpp_all_items",
+        "median_gross_rent_1br", "median_gross_rent_2br", "median_gross_rent_3br",
+        "rpp_all_items", "cpi_all", "cpi_food", "cpi_shelter", "cpi_transport", "cpi_medical",
     }
     missing = required - set(panel.columns)
     if missing:
@@ -265,21 +351,42 @@ def validate(panel: pd.DataFrame, years: list[int]) -> None:
         raise ValueError("Class requirement not met: need at least 10 groups and 5 periods.")
     if set(years) != set(panel["year"].unique()):
         raise ValueError("Not all requested years are represented.")
+    if panel.duplicated(["state_code", "year", "occupation_code"]).any():
+        raise ValueError("The panel contains duplicate state/year/occupation keys.")
+    observed_context = [
+        "median_gross_rent", "median_gross_rent_1br", "median_gross_rent_2br",
+        "median_gross_rent_3br", "median_household_income", "population",
+    ]
+    missing_context = {
+        field: float(panel[field].isna().mean())
+        for field in observed_context
+        if panel[field].isna().any()
+    }
+    if missing_context:
+        raise ValueError(f"ACS coverage is incomplete: {missing_context}")
+    cpi_coverage = panel["cpi_all"].notna().mean()
+    if cpi_coverage < 1:
+        raise ValueError(f"CPI coverage is incomplete: {cpi_coverage:.1%}.")
     rpp_coverage = panel["rpp_all_items"].notna().mean()
-    if rpp_coverage == 0:
-        logging.warning("The panel is structurally complete but has no BEA RPP coverage yet.")
-    elif rpp_coverage < 0.95:
-        logging.warning("BEA RPP coverage is only %.1f%%.", rpp_coverage * 100)
+    if not allow_missing_rpp and rpp_coverage < 1:
+        raise ValueError(f"BEA RPP coverage is incomplete: {rpp_coverage:.1%}.")
+    if allow_missing_rpp and rpp_coverage < 1:
+        logging.warning("Debug build: BEA RPP coverage is only %.1f%%.", rpp_coverage * 100)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--years", nargs="+", type=int, default=list(range(2018, 2025)))
+    parser.add_argument("--years", nargs="+", type=int, default=list(range(2015, 2025)))
     parser.add_argument("--force", action="store_true", help="redownload cached raw files")
+    parser.add_argument(
+        "--allow-missing-rpp",
+        action="store_true",
+        help="debug only: keep RPP fields missing instead of failing the final validation",
+    )
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
-    panel = build(args.years, force=args.force)
-    validate(panel, args.years)
+    panel = build(args.years, force=args.force, allow_missing_rpp=args.allow_missing_rpp)
+    validate(panel, args.years, allow_missing_rpp=args.allow_missing_rpp)
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     panel.to_csv(PROCESSED_DIR / "affordability_panel.csv", index=False)
     panel.to_parquet(PROCESSED_DIR / "affordability_panel.parquet", index=False)

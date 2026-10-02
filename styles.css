@@ -650,6 +650,14 @@ button, select { cursor: pointer; }
 .model-card { min-height: 195px; padding: 24px; background: transparent; }
 .model-number { color: var(--lime); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
 .model-card p { margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
+.source-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 12px; }
+.source-card { min-height: 180px; padding: 21px; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(17, 25, 34, .46); }
+.source-card strong { display: block; margin-top: 15px; font-size: 15px; letter-spacing: -.025em; }
+.source-card p { min-height: 58px; margin: 10px 0 15px; color: var(--muted); font-size: 11px; line-height: 1.65; }
+.source-card a { color: var(--lime); font: 700 10px/1 var(--mono); text-decoration: none; }
+.source-card-note { display: block; color: var(--muted); font: 10px/1.45 var(--mono); }
+.source-card-assumption { border-color: rgba(255,156,99,.28); background: rgba(255,156,99,.055); }
+.source-card-assumption .card-kicker { color: var(--orange); }
 .closing-cta { display: flex; align-items: center; justify-content: space-between; gap: 25px; margin-top: 14px; padding: 30px; border: 1px solid rgba(201, 245, 106, .28); border-radius: var(--radius); background: linear-gradient(105deg, rgba(201, 245, 106, .09), transparent); }
 .closing-cta .eyebrow { margin-bottom: 8px; }
 .closing-cta h3 { margin: 0; font-size: 22px; letter-spacing: -.04em; }
@@ -975,6 +983,7 @@ dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
   .dashboard-grid, .chart-grid, .lower-grid { grid-template-columns: 1fr; }
   .metric-grid { grid-template-columns: repeat(2, 1fr); }
   .model-grid { grid-template-columns: repeat(2, 1fr); }
+  .source-strip { grid-template-columns: repeat(2, 1fr); }
   .house-lab-grid { grid-template-columns: 1fr; }
   .evidence-card, .evidence-card-wide { grid-column: span 6; }
 }
@@ -1067,6 +1076,9 @@ dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
   .reading-guide > div { min-height: 0; padding: 18px; }
   .model-grid { gap: 8px; }
   .model-card { min-height: 180px; padding: 17px; }
+  .source-strip { grid-template-columns: 1fr; gap: 8px; }
+  .source-card { min-height: 0; padding: 18px; }
+  .source-card p { min-height: 0; }
   .closing-cta, .dashboard-head, .control-foot, .site-footer { display: block; }
   .closing-cta .button { margin-top: 20px; }
   .dashboard-head { padding: 48px 0 35px; }

@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var DATA = window.PAYCHECK_ATLAS;
+  var DATA = window.PAYCHECK_ATLAS_SOURCE || window.PAYCHECK_ATLAS;
   var page = document.body.getAttribute('data-page');
   var currentChartMeasure = 'expenses';
   var currentMapMeasure = 'ratio';
@@ -71,6 +71,22 @@
     return DATA.years[DATA.years.length - 1];
   }
 
+  function renderDataStatus() {
+    var metadata = DATA.metadata || {};
+    var sourceBacked = Boolean(metadata.sourceBacked);
+    var statusLabel = metadata.statusLabel || (sourceBacked ? 'Source-backed data · validated panel' : 'Visual prototype · illustrative scenario data');
+    var statusScope = metadata.statusScope || (sourceBacked
+      ? 'This view uses the validated occupation × state × year panel and documented scenario assumptions.'
+      : 'Current values are illustrative and are not empirical findings.');
+    var statusNote = metadata.statusNote || (sourceBacked
+      ? 'These calculations use the validated occupation × state × year panel plus clearly labeled model assumptions.'
+      : 'These calculations currently use illustrative inputs.');
+    $all('[data-status-label]').forEach(function (element) { element.textContent = statusLabel; });
+    $all('[data-status-scope]').forEach(function (element) { element.textContent = statusScope; });
+    $all('[data-status-note]').forEach(function (element) { element.textContent = statusNote; });
+    $all('[data-status-note-label]').forEach(function (element) { element.textContent = sourceBacked ? 'Source-backed status:' : 'Prototype status:'; });
+  }
+
   function costYearFactor(year) {
     return 1 + ((latestYear() - Number(year)) * 0.028);
   }
@@ -88,6 +104,35 @@
     return 1 - ((latestYear() - Number(year)) * 0.022);
   }
 
+  function sourceBacked() {
+    return Boolean(DATA.metadata && DATA.metadata.sourceBacked);
+  }
+
+  function yearMapValue(map, year, fallback) {
+    if (!map) return fallback;
+    var value = map[String(year)];
+    return value === undefined || value === null ? fallback : value;
+  }
+
+  function sourceRpp(state, year, component) {
+    var current = yearMapValue(state.rppByYear, year, null);
+    if (!current) return Number(state.rpp || 100);
+    return Number(current[component] || current.all || state.rpp || 100);
+  }
+
+  function sourceRent(state, year, bedrooms) {
+    var current = yearMapValue(state.rentByYear, year, null);
+    if (!current) return Number(state.rent || 0);
+    return Number(current[String(bedrooms)] || current['1'] || state.rent || 0);
+  }
+
+  function sourceWage(career, state, year, percentileKey) {
+    var stateWages = career.wages && career.wages[state.code];
+    var yearWages = yearMapValue(stateWages, year, null);
+    if (!yearWages) return Number(career.base || 0);
+    return Number(yearWages[percentileKey] || yearWages.median || career.base || 0);
+  }
+
   function calculate(options) {
     var state = findBy(DATA.states, 'code', options.stateCode || 'TX');
     var career = findBy(DATA.careers, 'id', options.careerId || 'nurse');
@@ -96,27 +141,37 @@
     var percentile = DATA.percentiles[options.percentileKey || 'median'];
     var housingProfile = findBy(DATA.housing || [], 'id', options.housingId || 'one-bedroom');
     var year = Number(options.year || latestYear());
-    var priceFactor = state.rpp / 100;
-    var yearCosts = cpiFactor(year, 'all');
+    var usingSource = sourceBacked();
+    var model = DATA.model || {};
+    var statePriceLevel = usingSource ? sourceRpp(state, year, 'all') : Number(state.rpp || 100);
+    var priceFactor = statePriceLevel / 100;
+    var taxRate = usingSource ? Number(model.taxRate || 0.22) : Number(state.tax || 0.22);
     var salary = Number(options.customSalary) > 0
       ? Number(options.customSalary)
-      : career.base * state.wage * percentile.multiplier * wageYearFactor(year);
+      : usingSource
+        ? sourceWage(career, state, year, options.percentileKey || 'median') * percentile.multiplier
+        : career.base * state.wage * percentile.multiplier * wageYearFactor(year);
 
     var selectedHousing = options.housingId ? housingProfile : null;
-    var housing = state.rent * (selectedHousing ? selectedHousing.rentFactor : household.home) * cpiFactor(year, 'housing');
-    var food = 460 * household.food * priceFactor * cpiFactor(year, 'food');
-    var transport = state.transport * household.transport * cpiFactor(year, 'transport');
-    var health = 315 * household.health * priceFactor * cpiFactor(year, 'health');
-    var childcare = household.childcare ? 1200 * (household.children === 2 ? 1.45 : 1) * priceFactor * cpiFactor(year, 'other') : 0;
-    var utilities = 190 * (selectedHousing ? selectedHousing.rentFactor * 0.78 + 0.22 : household.home * 0.78 + 0.22) * priceFactor * cpiFactor(year, 'utilities');
-    var other = 245 * (1 + household.children * 0.3) * priceFactor * cpiFactor(year, 'other');
-    var discretionary = mode.discretionary * priceFactor * cpiFactor(year, 'other');
+    var bedroomCount = selectedHousing && selectedHousing.bedrooms !== null ? selectedHousing.bedrooms : 1;
+    var observedRent = usingSource ? sourceRent(state, year, bedroomCount) : Number(state.rent || 0);
+    var housing = observedRent * (selectedHousing ? (usingSource ? 1 : selectedHousing.rentFactor) : household.home) * (usingSource ? 1 : cpiFactor(year, 'housing'));
+    var goodsFactor = usingSource ? sourceRpp(state, year, 'goods') / 100 : priceFactor;
+    var servicesFactor = usingSource ? sourceRpp(state, year, 'otherServices') / 100 : priceFactor;
+    var utilityFactor = usingSource ? sourceRpp(state, year, 'utilities') / 100 : priceFactor;
+    var food = Number(model.food || 460) * household.food * goodsFactor * cpiFactor(year, 'food');
+    var transport = (usingSource ? Number(model.transport || 380) : Number(state.transport || 380)) * household.transport * goodsFactor * cpiFactor(year, 'transport');
+    var health = Number(model.health || 315) * household.health * servicesFactor * cpiFactor(year, 'health');
+    var childcare = household.childcare ? 1200 * (household.children === 2 ? 1.45 : 1) * servicesFactor * cpiFactor(year, 'other') : 0;
+    var utilities = Number(model.utilities || 190) * (selectedHousing ? (usingSource ? 1 : selectedHousing.rentFactor * 0.78 + 0.22) : household.home * 0.78 + 0.22) * utilityFactor * cpiFactor(year, 'utilities');
+    var other = Number(model.other || 245) * (1 + household.children * 0.3) * servicesFactor * cpiFactor(year, 'other');
+    var discretionary = mode.discretionary * servicesFactor * cpiFactor(year, 'other');
     var savings = mode.savings;
     var essentials = housing + food + transport + health + childcare + utilities + other;
     var monthlyBudget = essentials + discretionary + savings;
-    var takeHome = salary * (1 - state.tax) / 12;
+    var takeHome = salary * (1 - taxRate) / 12;
     var leftover = takeHome - monthlyBudget;
-    var requiredGross = monthlyBudget * 12 / (1 - state.tax);
+    var requiredGross = monthlyBudget * 12 / (1 - taxRate);
     var rows = [
       { key: 'housing', label: 'Housing', value: housing, className: 'housing' },
       { key: 'food', label: 'Food', value: food, className: 'food' },
@@ -151,6 +206,8 @@
       housingCost: housing,
       priceAdjustedSalary: salary / priceFactor,
       priceFactor: priceFactor,
+      priceLevel: statePriceLevel,
+      taxRate: taxRate,
       cpiIndex: (findBy(DATA.cpi || [], 'year', year) || {}).all || 100,
       rows: rows
     };
@@ -184,7 +241,7 @@
   function mapValue(item, measure) {
     if (measure === 'leftover') return item.leftover;
     if (measure === 'required') return item.requiredGross;
-    if (measure === 'price') return item.state.rpp;
+    if (measure === 'price') return item.priceLevel;
     if (measure === 'housing') return item.housingCost / item.takeHome;
     return item.ratio;
   }
@@ -192,7 +249,7 @@
   function mapValueLabel(item, measure) {
     if (measure === 'leftover') return signedMoney(item.leftover);
     if (measure === 'required') return compactMoney(item.requiredGross);
-    if (measure === 'price') return item.state.rpp.toFixed(1);
+    if (measure === 'price') return item.priceLevel.toFixed(1);
     if (measure === 'housing') return percent(item.housingCost / item.takeHome);
     return ratio(item.ratio);
   }
@@ -240,6 +297,15 @@
   function renderMap(result) {
     var measure = $('#map-measure').value;
     currentMapMeasure = measure;
+    var legendCopy = {
+      ratio: ['tightest ratio', 'largest ratio'],
+      leftover: ['largest monthly gap', 'most monthly room'],
+      required: ['highest salary required', 'lowest salary required'],
+      price: ['lower price level', 'higher price level'],
+      housing: ['lower housing share', 'higher housing share']
+    }[measure] || ['lower value', 'higher value'];
+    setText('#map-legend-low', legendCopy[0]);
+    setText('#map-legend-high', legendCopy[1]);
     var compareCode = $('#compare-state-select').value;
     var scenarios = DATA.states.map(function (state) {
       return calculate({
@@ -326,7 +392,7 @@
       applyMapZoom();
     }
     setText('#map-selected-state', focused.state.name);
-    setText('#map-selected-copy', focused.state.name + ' gives this ' + result.career.name + ' scenario ' + mapValueLabel(focused, measure) + ' on the selected map lens.');
+    setText('#map-selected-copy', focused.state.name + ' gives this ' + result.career.name + ' scenario ' + mapValueLabel(focused, measure) + ' on the selected map lens. The legend changes with the selected measure, so “better” always means better for that lens.');
     $('#map-selected-detail').innerHTML = [
       ['Home benchmark', focused.housingProfile.label, ''],
       ['Rent / month', money(focused.housingCost), ''],
@@ -413,7 +479,7 @@
         housingId: result.housingId,
         customSalary: result.customSalary || ''
       });
-      item.rankValue = measure === 'ratio' ? item.ratio : measure === 'leftover' ? item.leftover : measure === 'salary' ? item.salary : item.state.rpp;
+      item.rankValue = measure === 'ratio' ? item.ratio : measure === 'leftover' ? item.leftover : measure === 'salary' ? item.salary : item.priceLevel;
       return item;
     });
     var favorableValue = function (item) { return measure === 'price' ? -item.rankValue : item.rankValue; };
@@ -911,9 +977,9 @@
     selectOptions($('#housing-select'), DATA.housing, 'id', function (item) { return item.label; });
     selectOptions($('#percentile-select'), Object.keys(DATA.percentiles).map(function (key) { return { id: key, label: DATA.percentiles[key].label }; }), 'id', function (item) { return item.label; });
     selectOptions($('#mode-select'), DATA.modes, 'id', function (item) { return item.name; });
-    $('#career-select').value = 'nurse';
-    $('#state-select').value = 'TX';
-    $('#compare-state-select').value = 'CA';
+    $('#career-select').value = DATA.defaultCareerId || 'nurse';
+    $('#state-select').value = DATA.defaultStateCode || 'TX';
+    $('#compare-state-select').value = DATA.defaultCompareStateCode || 'CA';
     $('#year-select').value = String(latestYear());
     $('#household-select').value = 'solo';
     $('#housing-select').value = 'one-bedroom';
@@ -955,9 +1021,9 @@
       });
     });
     $('#reset-dashboard').addEventListener('click', function () {
-      $('#career-select').value = 'nurse';
-      $('#state-select').value = 'TX';
-      $('#compare-state-select').value = 'CA';
+      $('#career-select').value = DATA.defaultCareerId || 'nurse';
+      $('#state-select').value = DATA.defaultStateCode || 'TX';
+      $('#compare-state-select').value = DATA.defaultCompareStateCode || 'CA';
       $('#year-select').value = String(latestYear());
       $('#household-select').value = 'solo';
       $('#housing-select').value = 'one-bedroom';
@@ -1119,7 +1185,9 @@
   function renderCareerDeck(activeCareerId) {
     var deck = $('#home-career-deck');
     if (!deck) return;
-    deck.innerHTML = DATA.careers.map(function (career) {
+    var featuredIds = DATA.featuredCareerIds || DATA.careers.slice(0, 12).map(function (career) { return career.id; });
+    var careers = featuredIds.map(function (id) { return findBy(DATA.careers, 'id', id); }).filter(Boolean);
+    deck.innerHTML = careers.map(function (career) {
       return '<button class="career-card' + (career.id === activeCareerId ? ' active' : '') + '" type="button" data-career-id="' + escapeHtml(career.id) + '"><span class="career-card-icon">' + careerIconMarkup(career) + '</span><strong>' + escapeHtml(career.name) + '</strong><small>' + escapeHtml(career.family) + '</small><b>' + compactMoney(career.base) + ' / yr</b></button>';
     }).join('');
     $all('.career-card', deck).forEach(function (button) {
@@ -1131,7 +1199,7 @@
   }
 
   function renderHome() {
-    var result = calculate({ careerId: 'nurse', stateCode: 'TX', year: latestYear(), householdId: 'solo', percentileKey: 'median', modeId: 'balanced', housingId: 'one-bedroom' });
+    var result = calculate({ careerId: DATA.defaultCareerId || 'nurse', stateCode: DATA.defaultStateCode || 'TX', year: latestYear(), householdId: 'solo', percentileKey: 'median', modeId: 'balanced', housingId: 'one-bedroom' });
     renderHomeScenario(result);
   }
 
@@ -1189,9 +1257,9 @@
     selectOptions($('#home-state-a'), DATA.states, 'code', function (item) { return item.name; });
     selectOptions($('#home-state-b'), DATA.states, 'code', function (item) { return item.name; });
     selectOptions($('#home-housing-select'), DATA.housing, 'id', function (item) { return item.label; });
-    $('#home-career-select').value = 'nurse';
-    $('#home-state-a').value = 'TX';
-    $('#home-state-b').value = 'CA';
+    $('#home-career-select').value = DATA.defaultCareerId || 'nurse';
+    $('#home-state-a').value = DATA.defaultStateCode || 'TX';
+    $('#home-state-b').value = DATA.defaultCompareStateCode || 'CA';
     $('#home-housing-select').value = 'one-bedroom';
     $all('#home-career-select, #home-state-a, #home-state-b, #home-housing-select').forEach(function (element) {
       element.addEventListener('change', renderHomePassport);
@@ -1243,6 +1311,7 @@
     if (skip) skip.addEventListener('click', enterSite);
   }
 
+  renderDataStatus();
   if (page === 'dashboard') initDashboard();
   if (page === 'home') {
     initArrivalGate();
