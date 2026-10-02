@@ -10,8 +10,6 @@
   var mapZoom = 1;
   var latestRows = [];
   var activeHomeHouseCategory = 'housing';
-  var homeSwipeScenarioA = null;
-  var homeSwipeScenarioB = null;
 
   var MAP_LAYOUT = {
     WA: [1, 1], ID: [2, 1], MT: [3, 1], ND: [4, 1], MN: [5, 1], WI: [6, 1], MI: [7, 1], NY: [8, 1], VT: [9, 1], NH: [10, 1], ME: [11, 1],
@@ -558,7 +556,7 @@
     setText('#home-housing-label', scenarioA.housingProfile.label);
     setText('#home-move-a', scenarioA.state.name);
     setText('#home-move-b', scenarioB.state.name);
-    renderHomeStateSwipe(scenarioA, scenarioB);
+    renderHomeHousingLedger(scenarioA, scenarioB);
     $('#home-housing-cards').innerHTML = housingCardMarkup(scenarioA, 'from', 'main', true) + housingCardMarkup(scenarioB, 'to', 'compare', true);
     var rentDifference = scenarioA.housingCost - scenarioB.housingCost;
     var winner = rentDifference <= 0 ? scenarioA : scenarioB;
@@ -567,49 +565,27 @@
     $('#home-housing-insight').innerHTML = '<strong>' + winner.state.name + '</strong> gives this ' + scenarioA.housingProfile.label.toLowerCase() + ' a lower modeled rent. The difference is ' + money(Math.abs(rentDifference)) + ' per month before food, transportation, taxes, and the rest of the life plan are added.';
   }
 
-  function updateHomeStateSwipe(value) {
-    var swipe = $('#home-state-swipe');
-    if (swipe) swipe.style.setProperty('--split', String(value) + '%');
-    var numericValue = Math.round(Number(value) || 50);
-    var stateA = $('#home-swipe-a-state');
-    var stateB = $('#home-swipe-b-state');
-    var stateAName = stateA ? stateA.textContent : 'State A';
-    var stateBName = stateB ? stateB.textContent : 'State B';
-    setText('#home-swipe-position', numericValue + '% ' + stateAName + ' · ' + (100 - numericValue) + '% ' + stateBName + ' visible');
-    var divider = $('#home-state-divider');
-    if (divider) divider.setAttribute('aria-valuetext', numericValue + ' percent ' + stateAName + ' and ' + (100 - numericValue) + ' percent ' + stateBName + ' visible');
-    if (!homeSwipeScenarioA || !homeSwipeScenarioB) return;
-    var transition = clamp((Number(value) - 18) / 64, 0, 1);
-    var blend = function (key) { return homeSwipeScenarioA[key] + ((homeSwipeScenarioB[key] - homeSwipeScenarioA[key]) * transition); };
-    var rent = blend('housingCost');
-    var takeHome = blend('takeHome');
-    var plan = blend('monthlyBudget');
-    var leftover = blend('leftover');
-    var ratioValue = blend('ratio');
-    var activeName = transition < .45 ? stateAName : transition > .55 ? stateBName : stateAName + ' ↔ ' + stateBName;
-    setText('#home-swipe-active-state', activeName);
-    setText('#home-swipe-active-copy', transition < .05 || transition > .95 ? 'Endpoint scenario · observed at ' + (transition < .5 ? stateAName : stateBName) : 'Visual transition between the two endpoint scenarios');
-    setText('#home-swipe-rent', money(rent));
-    setText('#home-swipe-pay', money(takeHome));
-    setText('#home-swipe-plan', money(plan));
-    setText('#home-swipe-live-leftover', signedMoney(leftover));
-    setText('#home-swipe-ratio', ratio(ratioValue));
-    setText('#home-swipe-explanation', 'At this position, modeled rent is ' + money(rent) + ' per month, the full plan is ' + money(plan) + ', and the household has ' + signedMoney(leftover) + ' left after expenses. The endpoints are real scenarios; the middle is a visual transition between them.');
-  }
-
-  function renderHomeStateSwipe(scenarioA, scenarioB) {
-    homeSwipeScenarioA = scenarioA;
-    homeSwipeScenarioB = scenarioB;
-    setText('#home-swipe-a-state', scenarioA.state.name);
-    setText('#home-swipe-b-state', scenarioB.state.name);
-    setText('#home-swipe-a-leftover', signedMoney(scenarioA.leftover));
-    setText('#home-swipe-b-leftover', signedMoney(scenarioB.leftover));
-    setText('#home-swipe-a-copy', money(scenarioA.housingCost) + ' rent · ' + percent(scenarioA.housingShare) + ' of essentials');
-    setText('#home-swipe-b-copy', money(scenarioB.housingCost) + ' rent · ' + percent(scenarioB.housingShare) + ' of essentials');
-    var delta = scenarioA.leftover - scenarioB.leftover;
-    setText('#home-swipe-explanation', 'The divider reveals two versions of the same life. ' + (delta >= 0 ? scenarioA.state.name : scenarioB.state.name) + ' leaves ' + money(Math.abs(delta)) + ' more per month after the same career, home, and lifestyle plan.');
-    var divider = $('#home-state-divider');
-    updateHomeStateSwipe(divider ? divider.value : 50);
+  function renderHomeHousingLedger(scenarioA, scenarioB) {
+    var difference = function (a, b) { return a - b; };
+    setText('#home-ledger-a-name', scenarioA.state.name);
+    setText('#home-ledger-b-name', scenarioB.state.name);
+    setText('#home-ledger-a-rent', money(scenarioA.housingCost));
+    setText('#home-ledger-b-rent', money(scenarioB.housingCost));
+    setText('#home-ledger-rent-delta', signedMoney(difference(scenarioA.housingCost, scenarioB.housingCost)));
+    setText('#home-ledger-a-pay', money(scenarioA.takeHome));
+    setText('#home-ledger-b-pay', money(scenarioB.takeHome));
+    setText('#home-ledger-pay-delta', signedMoney(difference(scenarioA.takeHome, scenarioB.takeHome)));
+    setText('#home-ledger-a-plan', money(scenarioA.monthlyBudget));
+    setText('#home-ledger-b-plan', money(scenarioB.monthlyBudget));
+    setText('#home-ledger-plan-delta', signedMoney(difference(scenarioA.monthlyBudget, scenarioB.monthlyBudget)));
+    setText('#home-ledger-a-leftover', signedMoney(scenarioA.leftover));
+    setText('#home-ledger-b-leftover', signedMoney(scenarioB.leftover));
+    setText('#home-ledger-leftover-delta', signedMoney(difference(scenarioA.leftover, scenarioB.leftover)));
+    setText('#home-ledger-a-share', percent(scenarioA.housingShare));
+    setText('#home-ledger-b-share', percent(scenarioB.housingShare));
+    setText('#home-ledger-share-delta', Math.round((scenarioA.housingShare - scenarioB.housingShare) * 100) + ' pts');
+    var betterRoom = scenarioA.leftover >= scenarioB.leftover ? scenarioA : scenarioB;
+    setText('#home-housing-ledger-explanation', 'The home stays at ' + scenarioA.housingProfile.label.toLowerCase() + ' and the lifestyle plan stays fixed. ' + betterRoom.state.name + ' leaves ' + money(Math.abs(scenarioA.leftover - scenarioB.leftover)) + ' more per month after the same modeled expenses.');
   }
 
   function animateHomeHouseMove() {
@@ -1220,12 +1196,6 @@
     $all('#home-career-select, #home-state-a, #home-state-b, #home-housing-select').forEach(function (element) {
       element.addEventListener('change', renderHomePassport);
     });
-    var divider = $('#home-state-divider');
-    if (divider) {
-      var syncSwipe = function () { updateHomeStateSwipe(divider.value); };
-      divider.addEventListener('input', syncSwipe);
-      divider.addEventListener('change', syncSwipe);
-    }
     var timeScrubber = $('#home-time-scrubber');
     if (timeScrubber) {
       timeScrubber.min = String(DATA.years[0]);
