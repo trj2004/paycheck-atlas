@@ -1200,7 +1200,11 @@
       element.addEventListener('change', renderHomePassport);
     });
     var divider = $('#home-state-divider');
-    if (divider) divider.addEventListener('input', function () { updateHomeStateSwipe(divider.value); });
+    if (divider) {
+      var syncSwipe = function () { updateHomeStateSwipe(divider.value); };
+      divider.addEventListener('input', syncSwipe);
+      divider.addEventListener('change', syncSwipe);
+    }
     var timeScrubber = $('#home-time-scrubber');
     if (timeScrubber) {
       timeScrubber.min = String(DATA.years[0]);
